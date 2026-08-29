@@ -1,0 +1,6 @@
+{
+  "sortTailwindcss": {
+    "functions": ["clsx", "cn"],
+    "preserveWhitespace": true
+  }
+}
