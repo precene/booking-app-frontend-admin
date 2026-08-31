@@ -3,8 +3,39 @@ import { DateTime } from "luxon";
 
 const releaseDateSchema = z
   .string()
-  .refine((value) => !value || isTodayOrFutureDate(value), "Release date cannot be in the past")
-  .optional();
+  .trim()
+  .superRefine((value, context) => {
+    if (!value) {
+      context.addIssue({ code: "custom", message: "Release date is required" });
+      return;
+    }
+
+    if (!isTodayOrFutureDate(value)) {
+      context.addIssue({ code: "custom", message: "Release date cannot be in the past" });
+    }
+  });
+
+const trailerUrlSchema = z
+  .string()
+  .trim()
+  .superRefine((value, context) => {
+    if (!value) {
+      context.addIssue({ code: "custom", message: "Trailer URL is required" });
+      return;
+    }
+
+    if (value.length > 2048) {
+      context.addIssue({
+        code: "custom",
+        message: "Trailer URL must be at most 2048 characters",
+      });
+      return;
+    }
+
+    if (!isValidUrl(value)) {
+      context.addIssue({ code: "custom", message: "Trailer URL must be a valid URL" });
+    }
+  });
 
 const creditListSchema = z
   .array(z.string().trim().min(1, "Credit name is required").max(80))
@@ -13,17 +44,17 @@ const creditListSchema = z
 
 export const movieSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(255),
-  overview: z.string().trim().max(5000).optional(),
-  posterUrl: z.string().trim().max(2048).optional(),
-  coverImage: z.string().trim().max(2048).optional(),
-  trailerUrl: z.string().trim().url("Trailer URL must be a valid URL").max(2048).optional(),
+  overview: z.string().trim().min(1, "Overview is required").max(5000),
+  posterUrl: z.string().trim().min(1, "Poster URL is required").max(2048),
+  coverImage: z.string().trim().min(1, "Cover image URL is required").max(2048),
+  trailerUrl: trailerUrlSchema,
   durationMinutes: z
     .number()
     .int()
     .min(1, "Duration must be at least 1 minute")
     .max(600, "Duration must be at most 600 minutes"),
-  ageRating: z.string().trim().max(20).optional(),
-  genre: z.string().trim().max(50).optional(),
+  ageRating: z.string().trim().min(1, "Age rating is required").max(20),
+  genre: z.string().trim().min(1, "Genre is required").max(50),
   directors: creditListSchema,
   producers: creditListSchema,
   writers: creditListSchema,
@@ -40,4 +71,13 @@ function isTodayOrFutureDate(value: string) {
   }
 
   return selectedDate.startOf("day") >= DateTime.now().startOf("day");
+}
+
+function isValidUrl(value: string) {
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
 }

@@ -10,19 +10,18 @@ export const venueSchema = z.object({
     .email("Invalid contact email")
     .max(254, "Contact email is too long")
     .optional(),
-  contactPhone: z.string().trim().max(64, "Contact phone is too long").optional(),
+  contactPhone: z
+    .string()
+    .trim()
+    .min(1, "Contact phone is required")
+    .max(64, "Contact phone is too long"),
   name: z.string().trim().min(1, "Venue name is required").max(160, "Venue name is too long"),
 });
-
-export const venueUpdateSchema = venueSchema
-  .partial()
-  .refine((value) => Object.keys(value).length > 0, {
-    message: "At least one venue field is required",
-  });
 
 export const venueScreenSetupSchema = z
   .object({
     active: z.boolean(),
+    columns: z.number().int().min(1, "Columns are required").max(50, "Columns cannot exceed 50"),
     layoutName: z
       .string()
       .trim()
@@ -31,21 +30,28 @@ export const venueScreenSetupSchema = z
     name: z.string().trim().min(1, "Screen name is required").max(80, "Screen name is too long"),
     rows: z.number().int().min(1, "Rows are required").max(40, "Rows cannot exceed 40"),
     screenType: z.enum(["flat", "curved"]),
-    seatsPerRow: z
-      .number()
-      .int()
-      .min(1, "Seats per row are required")
-      .max(50, "Seats per row cannot exceed 50"),
+    seats: z
+      .array(
+        z.object({
+          positionX: z.number().int().min(1).max(32767),
+          positionY: z.number().int().min(1).max(32767),
+          status: z.enum(["seat", "disabled"]),
+        }),
+      )
+      .min(1, "At least one seat is required")
+      .max(2000, "A layout cannot contain more than 2000 seats"),
     sortOrder: z.number().int().min(0).max(32767),
   })
-  .refine((screen) => screen.rows * screen.seatsPerRow <= 2000, {
-    message: "A layout cannot contain more than 2000 seats",
-    path: ["seatsPerRow"],
+  .refine((screen) => screen.seats.every((seat) => seat.positionY <= screen.rows), {
+    message: "Seat row is outside the layout grid",
+    path: ["seats"],
+  })
+  .refine((screen) => screen.seats.every((seat) => seat.positionX <= screen.columns), {
+    message: "Seat column is outside the layout grid",
+    path: ["seats"],
   });
 
 export const venueScreensSetupSchema = z
   .array(venueScreenSetupSchema)
   .min(1, "At least one screen is required")
   .max(10, "A venue can be created with up to 10 screens at a time");
-
-export type VenueFormValidationValues = z.infer<typeof venueSchema>;

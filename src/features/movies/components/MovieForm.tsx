@@ -285,7 +285,9 @@ export function MovieForm({
               <div className="space-y-2">
                 <Label htmlFor="posterUrl">Poster URL</Label>
                 <Input
-                  aria-describedby={errors.posterUrl ? "poster-url-error" : undefined}
+                  aria-describedby={
+                    errors.posterUrl ? "poster-url-hint poster-url-error" : "poster-url-hint"
+                  }
                   aria-invalid={Boolean(errors.posterUrl)}
                   id="posterUrl"
                   name="posterUrl"
@@ -294,6 +296,9 @@ export function MovieForm({
                   type="url"
                   value={movieForm.posterUrl}
                 />
+                <p className="text-muted text-sm" id="poster-url-hint">
+                  Recommended poster size: 1000x1500 pixels.
+                </p>
 
                 {errors.posterUrl ? (
                   <p className="text-destructive text-sm" id="poster-url-error">
@@ -390,18 +395,18 @@ export function MovieForm({
 export function getMoviePayload(formValues: MovieFormValues): MoviePayload {
   return {
     active: formValues.active,
-    ageRating: toOptionalString(formValues.ageRating),
+    ageRating: formValues.ageRating.trim(),
     cast: toOptionalStringArray(formValues.cast),
-    coverImage: toOptionalString(formValues.coverImage),
+    coverImage: formValues.coverImage.trim(),
     directors: toOptionalStringArray(formValues.directors),
     durationMinutes: Number(formValues.durationMinutes),
-    genre: toOptionalString(formValues.genre),
-    overview: toOptionalString(formValues.overview),
-    posterUrl: toOptionalString(formValues.posterUrl),
+    genre: formValues.genre.trim(),
+    overview: formValues.overview.trim(),
+    posterUrl: formValues.posterUrl.trim(),
     producers: toOptionalStringArray(formValues.producers),
-    releaseDate: toOptionalString(formValues.releaseDate),
+    releaseDate: formValues.releaseDate.trim(),
     title: formValues.title.trim(),
-    trailerUrl: toOptionalString(formValues.trailerUrl),
+    trailerUrl: formValues.trailerUrl.trim(),
     writers: toOptionalStringArray(formValues.writers),
   };
 }
@@ -470,12 +475,6 @@ function toDateInputValue(value: string | null) {
   }
 
   return parsedDate.toISODate() ?? "";
-}
-
-function toOptionalString(value: string | undefined) {
-  const trimmedValue = value?.trim();
-
-  return trimmedValue ? trimmedValue : undefined;
 }
 
 function toOptionalStringArray(value: string | undefined) {

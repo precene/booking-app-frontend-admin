@@ -234,6 +234,7 @@ export default function VenuesPage() {
               className="pl-9"
               disabled={isLoading}
               id="venue-search"
+              maxLength={100}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Name or address"
               type="search"

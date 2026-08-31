@@ -20,18 +20,18 @@ export interface Movie {
 
 export interface MoviePayload {
   active?: boolean;
-  ageRating?: string;
+  ageRating: string;
   cast?: Array<string>;
-  coverImage?: string;
+  coverImage: string;
   directors?: Array<string>;
   durationMinutes: number;
-  genre?: string;
-  overview?: string;
-  posterUrl?: string;
+  genre: string;
+  overview: string;
+  posterUrl: string;
   producers?: Array<string>;
-  releaseDate?: string;
+  releaseDate: string;
   title: string;
-  trailerUrl?: string;
+  trailerUrl: string;
   writers?: Array<string>;
 }
 

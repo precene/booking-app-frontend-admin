@@ -16,7 +16,7 @@ import {
 import { screensApi } from "../services/screensApi";
 import { seatLayoutsApi } from "../services/seatLayoutsApi";
 import type { SeatLayout } from "../types/seatLayoutTypes";
-import { generateSeatDefinitions } from "../utils/seatLayoutUtils";
+import { getSeatDefinitions, getSeatLayoutConfig } from "../utils/seatLayoutUtils";
 import { venueScreenSetupSchema } from "../validations/venueValidation";
 
 const formId = "edit-venue-screen-form";
@@ -92,14 +92,11 @@ export default function EditVenueScreenPage() {
       });
 
       const layoutPayload = {
-        config: {
-          rows: screenSetup.rows,
-          seatsPerRow: screenSetup.seatsPerRow,
-        },
+        config: getSeatLayoutConfig(screenSetup.rows, screenSetup.columns, screenSetup.seats),
         isActive: true,
         name: screenSetup.layoutName.trim(),
         screenId,
-        seatDefs: generateSeatDefinitions(screenSetup.rows, screenSetup.seatsPerRow),
+        seatDefs: getSeatDefinitions(screenSetup.seats),
       };
 
       if (layout) {

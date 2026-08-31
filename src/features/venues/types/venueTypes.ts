@@ -16,7 +16,7 @@ export type VenuePayload = {
   address: string;
   cityId: string;
   contactEmail?: null | string;
-  contactPhone?: null | string;
+  contactPhone: string;
   name: string;
 };
 

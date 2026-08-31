@@ -22,7 +22,7 @@ import { Textarea } from "#/shared/components/ui/textarea";
 import { toast } from "#/shared/components/ui/toast";
 import { getApiErrorMessage } from "#/shared/utils/getApiErrorMessage";
 import { getFormValidationErrors } from "#/shared/utils/getFormValidationErrors";
-import { SeatLayoutPreview } from "../components/SeatLayoutPreview";
+import { SeatLayoutDesigner } from "../components/SeatLayoutDesigner";
 import {
   getVenuePayload,
   initialVenueFormValues,
@@ -32,17 +32,24 @@ import {
 import { screensApi } from "../services/screensApi";
 import { seatLayoutsApi } from "../services/seatLayoutsApi";
 import { venuesApi } from "../services/venuesApi";
+import type { SeatLayoutCell } from "../types/seatLayoutTypes";
 import type { ScreenType } from "../types/screenTypes";
-import { generateSeatDefinitions } from "../utils/seatLayoutUtils";
+import {
+  createSeatLayoutCells,
+  getSeatCount,
+  getSeatDefinitions,
+  getSeatLayoutConfig,
+} from "../utils/seatLayoutUtils";
 import { venueSchema, venueScreensSetupSchema } from "../validations/venueValidation";
 
 type ScreenSetupFormValues = {
   active: boolean;
+  columns: number;
   layoutName: string;
   name: string;
   rows: number;
   screenType: ScreenType;
-  seatsPerRow: number;
+  seats: Array<SeatLayoutCell>;
   sortOrder: number;
 };
 
@@ -54,11 +61,12 @@ const steps: Array<StepperStep> = [
 
 const initialScreenSetup: ScreenSetupFormValues = {
   active: true,
+  columns: 12,
   layoutName: "Default Layout",
   name: "Screen 1",
   rows: 8,
   screenType: "flat",
-  seatsPerRow: 12,
+  seats: createSeatLayoutCells(8, 12),
   sortOrder: 0,
 };
 
@@ -82,7 +90,7 @@ export default function CreateVenuePage() {
   );
 
   const totalCapacity = useMemo(
-    () => screens.reduce((total, screen) => total + screen.rows * screen.seatsPerRow, 0),
+    () => screens.reduce((total, screen) => total + getSeatCount(screen.seats), 0),
     [screens],
   );
 
@@ -237,14 +245,11 @@ export default function CreateVenuePage() {
         const screen = screenResponse.data.screen;
 
         await seatLayoutsApi.create({
-          config: {
-            rows: screenSetup.rows,
-            seatsPerRow: screenSetup.seatsPerRow,
-          },
+          config: getSeatLayoutConfig(screenSetup.rows, screenSetup.columns, screenSetup.seats),
           isActive: true,
           name: screenSetup.layoutName.trim() || `Layout ${index + 1}`,
           screenId: screen.id,
-          seatDefs: generateSeatDefinitions(screenSetup.rows, screenSetup.seatsPerRow),
+          seatDefs: getSeatDefinitions(screenSetup.seats),
         });
       }
 
@@ -490,7 +495,7 @@ export default function CreateVenuePage() {
           <div>
             <h3 className="text-xl font-semibold tracking-normal">Screens & Seating</h3>
             <p className="text-muted mt-1 text-sm">
-              Add theatre screens and generate their active seat layouts.
+              Add Theatre Screens and Generate Their Active Seat Layouts.
             </p>
           </div>
 
@@ -501,31 +506,28 @@ export default function CreateVenuePage() {
         </div>
 
         {screens.map((screen, index) => (
-          <div
-            className="bg-surface grid gap-6 rounded-lg border p-6 shadow-sm xl:grid-cols-[1fr_28rem]"
-            key={index}
-          >
-            <div className="space-y-5">
-              <div className="flex items-start justify-between gap-4">
-                <h4 className="text-base font-semibold tracking-normal">
-                  {screen.name || `Screen ${index + 1}`}
-                </h4>
+          <div className="bg-surface rounded-lg border p-6 shadow-sm" key={index}>
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <h4 className="text-base font-semibold tracking-normal">
+                {screen.name || `Screen ${index + 1}`}
+              </h4>
 
-                <Button
-                  aria-label="Remove screen"
-                  disabled={screens.length === 1}
-                  onClick={() => removeScreen(index)}
-                  size="icon"
-                  type="button"
-                  variant="ghost"
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              </div>
+              <Button
+                aria-label="Remove screen"
+                disabled={screens.length === 1}
+                onClick={() => removeScreen(index)}
+                size="icon"
+                type="button"
+                variant="ghost"
+              >
+                <Trash2 className="size-4" />
+              </Button>
+            </div>
 
-              <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid gap-6 xl:grid-cols-[20rem_1fr]">
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor={`screen-${index}-name`}>Screen name</Label>
+                  <Label htmlFor={`screen-${index}-name`}>Screen Name</Label>
                   <Input
                     id={`screen-${index}-name`}
                     onChange={(event) => updateScreenField(index, "name", event.target.value)}
@@ -535,7 +537,7 @@ export default function CreateVenuePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor={`screen-${index}-type`}>Screen type</Label>
+                  <Label htmlFor={`screen-${index}-type`}>Screen Type</Label>
                   <Select
                     onValueChange={(value) =>
                       updateScreenField(index, "screenType", value as ScreenType)
@@ -553,35 +555,7 @@ export default function CreateVenuePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor={`screen-${index}-rows`}>Rows</Label>
-                  <Input
-                    id={`screen-${index}-rows`}
-                    max={40}
-                    min={1}
-                    onChange={(event) =>
-                      updateScreenField(index, "rows", Number(event.target.value))
-                    }
-                    type="number"
-                    value={screen.rows}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor={`screen-${index}-seats`}>Seats per row</Label>
-                  <Input
-                    id={`screen-${index}-seats`}
-                    max={50}
-                    min={1}
-                    onChange={(event) =>
-                      updateScreenField(index, "seatsPerRow", Number(event.target.value))
-                    }
-                    type="number"
-                    value={screen.seatsPerRow}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor={`screen-${index}-layout`}>Layout name</Label>
+                  <Label htmlFor={`screen-${index}-layout`}>Layout Name</Label>
                   <Input
                     id={`screen-${index}-layout`}
                     onChange={(event) => updateScreenField(index, "layoutName", event.target.value)}
@@ -591,7 +565,7 @@ export default function CreateVenuePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor={`screen-${index}-sort`}>Sort order</Label>
+                  <Label htmlFor={`screen-${index}-sort`}>Sort Order</Label>
                   <Input
                     id={`screen-${index}-sort`}
                     max={32767}
@@ -603,35 +577,36 @@ export default function CreateVenuePage() {
                     value={screen.sortOrder}
                   />
                 </div>
-              </div>
 
-              <label className="flex items-start gap-3">
-                <Checkbox
-                  checked={screen.active}
-                  id={`screen-${index}-active`}
-                  onCheckedChange={(checked) =>
-                    updateScreenField(index, "active", checked === true)
-                  }
-                />
+                <label className="flex items-start gap-3">
+                  <Checkbox
+                    checked={screen.active}
+                    id={`screen-${index}-active`}
+                    onCheckedChange={(checked) =>
+                      updateScreenField(index, "active", checked === true)
+                    }
+                  />
 
-                <span>
-                  <span className="block text-sm font-medium">Active screen</span>
-                  <span className="text-muted mt-1 block text-sm">
-                    Active screens can be used for show scheduling.
+                  <span>
+                    <span className="block text-sm font-medium">Active Screen</span>
+                    <span className="text-muted mt-1 block text-sm">
+                      Active screens can be used for show scheduling.
+                    </span>
                   </span>
-                </span>
-              </label>
-            </div>
-
-            <div>
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <h5 className="text-sm font-semibold tracking-normal">Seat Preview</h5>
-                <span className="text-muted text-sm font-medium">
-                  {screen.rows * screen.seatsPerRow} seats
-                </span>
+                </label>
               </div>
 
-              <SeatLayoutPreview rows={screen.rows} seatsPerRow={screen.seatsPerRow} />
+              <div>
+                <SeatLayoutDesigner
+                  columns={screen.columns}
+                  disabled={isSubmitting}
+                  onColumnsChange={(columns) => updateScreenField(index, "columns", columns)}
+                  onRowsChange={(rows) => updateScreenField(index, "rows", rows)}
+                  onSeatsChange={(seats) => updateScreenField(index, "seats", seats)}
+                  rows={screen.rows}
+                  seats={screen.seats}
+                />
+              </div>
             </div>
           </div>
         ))}
@@ -670,7 +645,7 @@ export default function CreateVenuePage() {
         <aside className="bg-surface rounded-lg border p-6 shadow-sm">
           <h3 className="text-base font-semibold tracking-normal">Capacity</h3>
           <p className="mt-4 text-3xl font-semibold tracking-normal">{totalCapacity}</p>
-          <p className="text-muted mt-1 text-sm">Total seats across {screens.length} screens.</p>
+          <p className="text-muted mt-1 text-sm">Total Seats Across {screens.length} Screens.</p>
 
           <div className="mt-5 space-y-3">
             {screens.map((screen, index) => (
@@ -680,8 +655,8 @@ export default function CreateVenuePage() {
               >
                 <p className="text-sm font-medium">{screen.name || `Screen ${index + 1}`}</p>
                 <p className="text-muted mt-1 text-sm">
-                  {screen.rows} rows x {screen.seatsPerRow} seats ={" "}
-                  {screen.rows * screen.seatsPerRow} seats
+                  {screen.rows} Rows x {screen.columns} Columns With {getSeatCount(screen.seats)}{" "}
+                  Physical Seats
                 </p>
               </div>
             ))}

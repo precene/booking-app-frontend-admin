@@ -15,17 +15,24 @@ import {
   SelectValue,
 } from "#/shared/components/ui/select";
 import type { FormValidationErrors } from "#/shared/utils/getFormValidationErrors";
-import { SeatLayoutPreview } from "./SeatLayoutPreview";
+import { SeatLayoutDesigner } from "./SeatLayoutDesigner";
 import type { Screen, ScreenType } from "../types/screenTypes";
-import type { SeatLayout } from "../types/seatLayoutTypes";
+import type { SeatLayout, SeatLayoutCell } from "../types/seatLayoutTypes";
+import {
+  createSeatLayoutCells,
+  getLayoutColumns,
+  getLayoutRows,
+  getSeatCellsFromLayout,
+} from "../utils/seatLayoutUtils";
 
 export type ScreenSeatFormValues = {
   active: boolean;
+  columns: number;
   layoutName: string;
   name: string;
   rows: number;
   screenType: ScreenType;
-  seatsPerRow: number;
+  seats: Array<SeatLayoutCell>;
   sortOrder: number;
 };
 
@@ -50,11 +57,12 @@ type ScreenSeatFormProps = {
 
 export const initialScreenSeatFormValues: ScreenSeatFormValues = {
   active: true,
+  columns: 12,
   layoutName: "Default Layout",
   name: "Screen 1",
   rows: 8,
   screenType: "flat",
-  seatsPerRow: 12,
+  seats: createSeatLayoutCells(8, 12),
   sortOrder: 0,
 };
 
@@ -95,113 +103,104 @@ export function ScreenSeatForm({
       </div>
 
       <Form
-        className="grid gap-6 xl:grid-cols-[1fr_28rem]"
+        className="space-y-6"
         disabled={isSubmitting}
         id={formId}
         noValidate
         onSubmit={onSubmit}
       >
-        <div className="bg-surface rounded-lg border p-6 shadow-sm">
-          <div className="mb-5 flex items-center gap-2">
-            <LayoutGrid className="text-primary size-5" />
-            <h3 className="text-base font-semibold tracking-normal">Screen & Layout</h3>
-          </div>
-
-          <div className="grid gap-5 sm:grid-cols-2">
-            <FieldErrorInput
-              error={errors.name}
-              id="name"
-              label="Screen name"
-              onChange={(value) => onUpdateField("name", value)}
-              placeholder="Screen 1"
-              value={values.name}
-            />
-
-            <div className="space-y-2">
-              <Label htmlFor="screenType">Screen type</Label>
-              <Select
-                onValueChange={(value) => onUpdateField("screenType", value as ScreenType)}
-                value={values.screenType}
-              >
-                <SelectTrigger id="screenType">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="flat">Flat</SelectItem>
-                  <SelectItem value="curved">Curved</SelectItem>
-                </SelectContent>
-              </Select>
+        <div className="grid gap-6 xl:grid-cols-[20rem_1fr]">
+          <div className="bg-surface rounded-lg border p-6 shadow-sm">
+            <div className="mb-5 flex items-center gap-2">
+              <LayoutGrid className="text-primary size-5" />
+              <h3 className="text-base font-semibold tracking-normal">Screen & Layout</h3>
             </div>
 
-            <FieldErrorInput
-              error={errors.rows}
-              id="rows"
-              label="Rows"
-              max={40}
-              min={1}
-              onChange={(value) => onUpdateField("rows", Number(value))}
-              type="number"
-              value={values.rows}
-            />
+            <div className="grid gap-4">
+              <FieldErrorInput
+                error={errors.name}
+                id="name"
+                label="Screen Name"
+                onChange={(value) => onUpdateField("name", value)}
+                placeholder="Screen 1"
+                value={values.name}
+              />
 
-            <FieldErrorInput
-              error={errors.seatsPerRow}
-              id="seatsPerRow"
-              label="Seats per row"
-              max={50}
-              min={1}
-              onChange={(value) => onUpdateField("seatsPerRow", Number(value))}
-              type="number"
-              value={values.seatsPerRow}
-            />
+              <div className="space-y-2">
+                <Label htmlFor="screenType">Screen Type</Label>
+                <Select
+                  onValueChange={(value) => onUpdateField("screenType", value as ScreenType)}
+                  value={values.screenType}
+                >
+                  <SelectTrigger id="screenType">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="flat">Flat</SelectItem>
+                    <SelectItem value="curved">Curved</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <FieldErrorInput
-              error={errors.layoutName}
-              id="layoutName"
-              label="Layout name"
-              onChange={(value) => onUpdateField("layoutName", value)}
-              placeholder="Default Layout"
-              value={values.layoutName}
-            />
+              <FieldErrorInput
+                error={errors.layoutName}
+                id="layoutName"
+                label="Layout Name"
+                onChange={(value) => onUpdateField("layoutName", value)}
+                placeholder="Default Layout"
+                value={values.layoutName}
+              />
 
-            <FieldErrorInput
-              error={errors.sortOrder}
-              id="sortOrder"
-              label="Sort order"
-              max={32767}
-              min={0}
-              onChange={(value) => onUpdateField("sortOrder", Number(value))}
-              type="number"
-              value={values.sortOrder}
-            />
-          </div>
+              <FieldErrorInput
+                error={errors.sortOrder}
+                id="sortOrder"
+                label="Sort Order"
+                max={32767}
+                min={0}
+                onChange={(value) => onUpdateField("sortOrder", Number(value))}
+                type="number"
+                value={values.sortOrder}
+              />
+            </div>
 
-          <label className="mt-5 flex items-start gap-3">
-            <Checkbox
-              checked={values.active}
-              id="active"
-              onCheckedChange={(checked) => onUpdateField("active", checked === true)}
-            />
+            <label className="mt-5 flex items-start gap-3">
+              <Checkbox
+                checked={values.active}
+                id="active"
+                onCheckedChange={(checked) => onUpdateField("active", checked === true)}
+              />
 
-            <span>
-              <span className="block text-sm font-medium">Active screen</span>
-              <span className="text-muted mt-1 block text-sm">
-                Active screens can be used for show scheduling.
+              <span>
+                <span className="block text-sm font-medium">Active Screen</span>
+                <span className="text-muted mt-1 block text-sm">
+                  Active screens can be used for show scheduling.
+                </span>
               </span>
-            </span>
-          </label>
-        </div>
-
-        <aside className="bg-surface rounded-lg border p-6 shadow-sm">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h3 className="text-base font-semibold tracking-normal">Seat Preview</h3>
-            <span className="text-muted text-sm font-medium">
-              {values.rows * values.seatsPerRow} seats
-            </span>
+            </label>
           </div>
 
-          <SeatLayoutPreview rows={values.rows} seatsPerRow={values.seatsPerRow} />
-        </aside>
+          <div className="bg-surface rounded-lg border p-6 shadow-sm">
+            <div className="mb-5">
+              <h3 className="text-base font-semibold tracking-normal">Seat Layout</h3>
+            </div>
+
+            <SeatLayoutDesigner
+              columns={values.columns}
+              disabled={isSubmitting}
+              onColumnsChange={(columns) => onUpdateField("columns", columns)}
+              onRowsChange={(rows) => onUpdateField("rows", rows)}
+              onSeatsChange={(seats) => onUpdateField("seats", seats)}
+              rows={values.rows}
+              seats={values.seats}
+            />
+
+            {errors.seats ? (
+              <p className="text-destructive mt-3 text-sm" id="seats-error">
+                {errors.seats}
+              </p>
+            ) : null}
+          </div>
+        </div>
       </Form>
     </>
   );
@@ -213,8 +212,9 @@ export function getScreenSeatFormValues(screen: Screen, layout: SeatLayout | nul
     layoutName: layout?.name ?? "Default Layout",
     name: screen.name,
     rows: getLayoutRows(layout),
+    columns: getLayoutColumns(layout),
     screenType: screen.screenType,
-    seatsPerRow: getLayoutSeatsPerRow(layout),
+    seats: getSeatCellsFromLayout(layout),
     sortOrder: screen.sortOrder,
   };
 }
@@ -266,21 +266,4 @@ function FieldErrorInput({
       ) : null}
     </div>
   );
-}
-
-function getLayoutRows(layout: SeatLayout | null) {
-  const rows = typeof layout?.config.rows === "number" ? layout.config.rows : null;
-
-  if (rows) return rows;
-
-  return Math.max(1, ...(layout?.seatDefs ?? []).map((seat) => seat.positionY));
-}
-
-function getLayoutSeatsPerRow(layout: SeatLayout | null) {
-  const seatsPerRow =
-    typeof layout?.config.seatsPerRow === "number" ? layout.config.seatsPerRow : null;
-
-  if (seatsPerRow) return seatsPerRow;
-
-  return Math.max(1, ...(layout?.seatDefs ?? []).map((seat) => seat.positionX));
 }

@@ -28,6 +28,7 @@ import { venuesApi } from "../services/venuesApi";
 import type { Screen } from "../types/screenTypes";
 import type { SeatLayout } from "../types/seatLayoutTypes";
 import type { Venue } from "../types/venueTypes";
+import { getSeatDefinitionsForDisplay } from "../utils/seatLayoutUtils";
 import { formatOptionalVenueValue, formatVenueDate } from "../utils/venueFormatters";
 
 type VenueInfoItem = {
@@ -393,7 +394,7 @@ export default function VenueDetailsPage() {
                   <VenueStatusBadge active={screen.active} />
                 </div>
 
-                <SeatDefinitionsPreview seats={layout?.seatDefs ?? []} />
+                <SeatDefinitionsPreview seats={getSeatDefinitionsForDisplay(layout)} />
               </div>
             ))}
           </div>

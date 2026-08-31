@@ -265,7 +265,7 @@ export function getVenuePayload(formValues: VenueFormValues): VenuePayload {
     address: formValues.address.trim(),
     cityId: formValues.cityId,
     contactEmail: toOptionalString(formValues.contactEmail),
-    contactPhone: toOptionalString(formValues.contactPhone),
+    contactPhone: formValues.contactPhone.trim(),
     name: formValues.name.trim(),
   };
 }

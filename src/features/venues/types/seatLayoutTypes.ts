@@ -6,6 +6,14 @@ export type SeatDefinitionPayload = {
   seatLabel: string;
 };
 
+export type SeatLayoutCellStatus = "disabled" | "seat";
+
+export type SeatLayoutCell = {
+  positionX: number;
+  positionY: number;
+  status: SeatLayoutCellStatus;
+};
+
 export type SeatDefinition = SeatDefinitionPayload & {
   id: string;
   isActive: boolean;

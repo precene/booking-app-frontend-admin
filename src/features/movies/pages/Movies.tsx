@@ -3,21 +3,21 @@ import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { AlertCircle, Eye, FilterX, Pencil, Plus, RefreshCcw, Search } from "lucide-react";
 
-import { getApiErrorMessage } from "#/shared/utils/getApiErrorMessage";
-import type { ApiPaginated } from "#/shared/types";
 import { moviesApi } from "../services/moviesApi";
+import type { ListMoviesQuery, Movie } from "../types/movieTypes";
 import {
   formatMovieDate,
   formatMovieDuration,
   formatOptionalMovieValue,
 } from "../utils/movieFormatters";
-import type { ListMoviesQuery, Movie } from "../types/movieTypes";
 
-import { Input } from "#/shared/components/ui/input";
-import { Label } from "#/shared/components/ui/label";
+import { Alert, AlertDescription } from "#/shared/components/ui/alert";
 import { Button } from "#/shared/components/ui/button";
 import { DataTable } from "#/shared/components/ui/data-table";
-import { Alert, AlertDescription } from "#/shared/components/ui/alert";
+import { Input } from "#/shared/components/ui/input";
+import { Label } from "#/shared/components/ui/label";
+import type { ApiPaginated } from "#/shared/types";
+import { getApiErrorMessage } from "#/shared/utils/getApiErrorMessage";
 
 const initialMovies: ApiPaginated<Movie> = {
   items: [],

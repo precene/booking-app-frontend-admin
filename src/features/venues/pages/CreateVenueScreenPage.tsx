@@ -14,7 +14,7 @@ import {
 } from "../components/ScreenSeatForm";
 import { screensApi } from "../services/screensApi";
 import { seatLayoutsApi } from "../services/seatLayoutsApi";
-import { generateSeatDefinitions } from "../utils/seatLayoutUtils";
+import { getSeatDefinitions, getSeatLayoutConfig } from "../utils/seatLayoutUtils";
 import { venueScreenSetupSchema } from "../validations/venueValidation";
 
 const formId = "create-venue-screen-form";
@@ -61,14 +61,11 @@ export default function CreateVenueScreenPage() {
       const screen = screenResponse.data.screen;
 
       await seatLayoutsApi.create({
-        config: {
-          rows: screenSetup.rows,
-          seatsPerRow: screenSetup.seatsPerRow,
-        },
+        config: getSeatLayoutConfig(screenSetup.rows, screenSetup.columns, screenSetup.seats),
         isActive: true,
         name: screenSetup.layoutName.trim(),
         screenId: screen.id,
-        seatDefs: generateSeatDefinitions(screenSetup.rows, screenSetup.seatsPerRow),
+        seatDefs: getSeatDefinitions(screenSetup.seats),
       });
 
       toast.success({ title: "Screen created." });

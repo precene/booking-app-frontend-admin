@@ -3,18 +3,18 @@ import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { AlertCircle, Eye, FilterX, Pencil, Plus, RefreshCcw, Search } from "lucide-react";
 
-import { getApiErrorMessage } from "#/shared/utils/getApiErrorMessage";
-import type { ApiPaginated } from "#/shared/types";
 import { CityStatusBadge } from "../components/CityStatusBadge";
 import { citiesApi } from "../services/citiesApi";
-import { formatOptionalCityValue } from "../utils/cityFormatters";
 import type { City, ListCitiesQuery } from "../types/cityTypes";
+import { formatOptionalCityValue } from "../utils/cityFormatters";
 
-import { Input } from "#/shared/components/ui/input";
-import { Label } from "#/shared/components/ui/label";
+import { Alert, AlertDescription } from "#/shared/components/ui/alert";
 import { Button } from "#/shared/components/ui/button";
 import { DataTable } from "#/shared/components/ui/data-table";
-import { Alert, AlertDescription } from "#/shared/components/ui/alert";
+import { Input } from "#/shared/components/ui/input";
+import { Label } from "#/shared/components/ui/label";
+import type { ApiPaginated } from "#/shared/types";
+import { getApiErrorMessage } from "#/shared/utils/getApiErrorMessage";
 
 const initialCities: ApiPaginated<City> = {
   items: [],
@@ -175,6 +175,7 @@ export default function CitiesPage() {
               className="pl-9"
               disabled={isLoading}
               id="city-search"
+              maxLength={100}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="City name"
               type="search"
