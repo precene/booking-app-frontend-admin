@@ -5,10 +5,10 @@ import {
   Users,
   Ticket,
   LogOut,
-  BarChart3,
   Building2,
   MapPinned,
   CreditCard,
+  BadgePercent,
   CalendarClock,
   ReceiptText,
   ChevronLeft,
@@ -31,7 +31,7 @@ const navItems = [
   { icon: Ticket, label: "Bookings", to: "/bookings" },
   { icon: Users, label: "Customers", to: "/customers" },
   { icon: CreditCard, label: "Payments", to: "/payments" },
-  { icon: BarChart3, label: "Reports", to: "/reports" },
+  { icon: BadgePercent, label: "Coupons", to: "/coupons" },
 ] as const;
 
 export function AdminLayout() {

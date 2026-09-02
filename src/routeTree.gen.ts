@@ -16,11 +16,13 @@ import { Route as ProtectedBookingsRouteImport } from './routes/_protected.booki
 import { Route as ProtectedCustomersRouteImport } from './routes/_protected.customers'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected.dashboard'
 import { Route as ProtectedPaymentsRouteImport } from './routes/_protected.payments'
-import { Route as ProtectedReportsRouteImport } from './routes/_protected.reports'
 import { Route as PublicLoginRouteImport } from './routes/_public.login'
 import { Route as ProtectedCitiesIndexRouteImport } from './routes/_protected.cities.index'
 import { Route as ProtectedCitiesCityIdRouteImport } from './routes/_protected.cities.$cityId'
 import { Route as ProtectedCitiesNewRouteImport } from './routes/_protected.cities.new'
+import { Route as ProtectedCouponsIndexRouteImport } from './routes/_protected.coupons.index'
+import { Route as ProtectedCouponsCouponIdRouteImport } from './routes/_protected.coupons.$couponId'
+import { Route as ProtectedCouponsNewRouteImport } from './routes/_protected.coupons.new'
 import { Route as ProtectedMoviesIndexRouteImport } from './routes/_protected.movies.index'
 import { Route as ProtectedMoviesMovieIdRouteImport } from './routes/_protected.movies.$movieId'
 import { Route as ProtectedMoviesNewRouteImport } from './routes/_protected.movies.new'
@@ -31,6 +33,7 @@ import { Route as ProtectedVenuesIndexRouteImport } from './routes/_protected.ve
 import { Route as ProtectedVenuesVenueIdRouteImport } from './routes/_protected.venues.$venueId'
 import { Route as ProtectedVenuesNewRouteImport } from './routes/_protected.venues.new'
 import { Route as ProtectedCitiesCityIdEditRouteImport } from './routes/_protected.cities.$cityId_.edit'
+import { Route as ProtectedCouponsCouponIdEditRouteImport } from './routes/_protected.coupons.$couponId_.edit'
 import { Route as ProtectedMoviesMovieIdEditRouteImport } from './routes/_protected.movies.$movieId_.edit'
 import { Route as ProtectedVenuesVenueIdEditRouteImport } from './routes/_protected.venues.$venueId_.edit'
 import { Route as ProtectedVenuesVenueIdScreensNewRouteImport } from './routes/_protected.venues.$venueId_.screens.new'
@@ -69,11 +72,6 @@ const ProtectedPaymentsRoute = ProtectedPaymentsRouteImport.update({
   path: '/payments',
   getParentRoute: () => ProtectedRoute,
 } as any)
-const ProtectedReportsRoute = ProtectedReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => ProtectedRoute,
-} as any)
 const PublicLoginRoute = PublicLoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -92,6 +90,22 @@ const ProtectedCitiesCityIdRoute = ProtectedCitiesCityIdRouteImport.update({
 const ProtectedCitiesNewRoute = ProtectedCitiesNewRouteImport.update({
   id: '/cities/new',
   path: '/cities/new',
+  getParentRoute: () => ProtectedRoute,
+} as any)
+const ProtectedCouponsIndexRoute = ProtectedCouponsIndexRouteImport.update({
+  id: '/coupons/',
+  path: '/coupons/',
+  getParentRoute: () => ProtectedRoute,
+} as any)
+const ProtectedCouponsCouponIdRoute =
+  ProtectedCouponsCouponIdRouteImport.update({
+    id: '/coupons/$couponId',
+    path: '/coupons/$couponId',
+    getParentRoute: () => ProtectedRoute,
+  } as any)
+const ProtectedCouponsNewRoute = ProtectedCouponsNewRouteImport.update({
+  id: '/coupons/new',
+  path: '/coupons/new',
   getParentRoute: () => ProtectedRoute,
 } as any)
 const ProtectedMoviesIndexRoute = ProtectedMoviesIndexRouteImport.update({
@@ -146,6 +160,12 @@ const ProtectedCitiesCityIdEditRoute =
     path: '/cities/$cityId/edit',
     getParentRoute: () => ProtectedRoute,
   } as any)
+const ProtectedCouponsCouponIdEditRoute =
+  ProtectedCouponsCouponIdEditRouteImport.update({
+    id: '/coupons/$couponId_/edit',
+    path: '/coupons/$couponId/edit',
+    getParentRoute: () => ProtectedRoute,
+  } as any)
 const ProtectedMoviesMovieIdEditRoute =
   ProtectedMoviesMovieIdEditRouteImport.update({
     id: '/movies/$movieId_/edit',
@@ -177,10 +197,11 @@ export interface FileRoutesByFullPath {
   '/customers': typeof ProtectedCustomersRoute
   '/dashboard': typeof ProtectedDashboardRoute
   '/payments': typeof ProtectedPaymentsRoute
-  '/reports': typeof ProtectedReportsRoute
   '/login': typeof PublicLoginRoute
   '/cities/$cityId': typeof ProtectedCitiesCityIdRoute
   '/cities/new': typeof ProtectedCitiesNewRoute
+  '/coupons/$couponId': typeof ProtectedCouponsCouponIdRoute
+  '/coupons/new': typeof ProtectedCouponsNewRoute
   '/movies/$movieId': typeof ProtectedMoviesMovieIdRoute
   '/movies/new': typeof ProtectedMoviesNewRoute
   '/showtimes/$showId': typeof ProtectedShowtimesShowIdRoute
@@ -188,10 +209,12 @@ export interface FileRoutesByFullPath {
   '/venues/$venueId': typeof ProtectedVenuesVenueIdRoute
   '/venues/new': typeof ProtectedVenuesNewRoute
   '/cities/': typeof ProtectedCitiesIndexRoute
+  '/coupons/': typeof ProtectedCouponsIndexRoute
   '/movies/': typeof ProtectedMoviesIndexRoute
   '/showtimes/': typeof ProtectedShowtimesIndexRoute
   '/venues/': typeof ProtectedVenuesIndexRoute
   '/cities/$cityId/edit': typeof ProtectedCitiesCityIdEditRoute
+  '/coupons/$couponId/edit': typeof ProtectedCouponsCouponIdEditRoute
   '/movies/$movieId/edit': typeof ProtectedMoviesMovieIdEditRoute
   '/venues/$venueId/edit': typeof ProtectedVenuesVenueIdEditRoute
   '/venues/$venueId/screens/new': typeof ProtectedVenuesVenueIdScreensNewRoute
@@ -203,10 +226,11 @@ export interface FileRoutesByTo {
   '/customers': typeof ProtectedCustomersRoute
   '/dashboard': typeof ProtectedDashboardRoute
   '/payments': typeof ProtectedPaymentsRoute
-  '/reports': typeof ProtectedReportsRoute
   '/login': typeof PublicLoginRoute
   '/cities/$cityId': typeof ProtectedCitiesCityIdRoute
   '/cities/new': typeof ProtectedCitiesNewRoute
+  '/coupons/$couponId': typeof ProtectedCouponsCouponIdRoute
+  '/coupons/new': typeof ProtectedCouponsNewRoute
   '/movies/$movieId': typeof ProtectedMoviesMovieIdRoute
   '/movies/new': typeof ProtectedMoviesNewRoute
   '/showtimes/$showId': typeof ProtectedShowtimesShowIdRoute
@@ -214,10 +238,12 @@ export interface FileRoutesByTo {
   '/venues/$venueId': typeof ProtectedVenuesVenueIdRoute
   '/venues/new': typeof ProtectedVenuesNewRoute
   '/cities': typeof ProtectedCitiesIndexRoute
+  '/coupons': typeof ProtectedCouponsIndexRoute
   '/movies': typeof ProtectedMoviesIndexRoute
   '/showtimes': typeof ProtectedShowtimesIndexRoute
   '/venues': typeof ProtectedVenuesIndexRoute
   '/cities/$cityId/edit': typeof ProtectedCitiesCityIdEditRoute
+  '/coupons/$couponId/edit': typeof ProtectedCouponsCouponIdEditRoute
   '/movies/$movieId/edit': typeof ProtectedMoviesMovieIdEditRoute
   '/venues/$venueId/edit': typeof ProtectedVenuesVenueIdEditRoute
   '/venues/$venueId/screens/new': typeof ProtectedVenuesVenueIdScreensNewRoute
@@ -232,10 +258,11 @@ export interface FileRoutesById {
   '/_protected/customers': typeof ProtectedCustomersRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
   '/_protected/payments': typeof ProtectedPaymentsRoute
-  '/_protected/reports': typeof ProtectedReportsRoute
   '/_public/login': typeof PublicLoginRoute
   '/_protected/cities/$cityId': typeof ProtectedCitiesCityIdRoute
   '/_protected/cities/new': typeof ProtectedCitiesNewRoute
+  '/_protected/coupons/$couponId': typeof ProtectedCouponsCouponIdRoute
+  '/_protected/coupons/new': typeof ProtectedCouponsNewRoute
   '/_protected/movies/$movieId': typeof ProtectedMoviesMovieIdRoute
   '/_protected/movies/new': typeof ProtectedMoviesNewRoute
   '/_protected/showtimes/$showId': typeof ProtectedShowtimesShowIdRoute
@@ -243,10 +270,12 @@ export interface FileRoutesById {
   '/_protected/venues/$venueId': typeof ProtectedVenuesVenueIdRoute
   '/_protected/venues/new': typeof ProtectedVenuesNewRoute
   '/_protected/cities/': typeof ProtectedCitiesIndexRoute
+  '/_protected/coupons/': typeof ProtectedCouponsIndexRoute
   '/_protected/movies/': typeof ProtectedMoviesIndexRoute
   '/_protected/showtimes/': typeof ProtectedShowtimesIndexRoute
   '/_protected/venues/': typeof ProtectedVenuesIndexRoute
   '/_protected/cities/$cityId_/edit': typeof ProtectedCitiesCityIdEditRoute
+  '/_protected/coupons/$couponId_/edit': typeof ProtectedCouponsCouponIdEditRoute
   '/_protected/movies/$movieId_/edit': typeof ProtectedMoviesMovieIdEditRoute
   '/_protected/venues/$venueId_/edit': typeof ProtectedVenuesVenueIdEditRoute
   '/_protected/venues/$venueId_/screens/new': typeof ProtectedVenuesVenueIdScreensNewRoute
@@ -260,10 +289,11 @@ export interface FileRouteTypes {
     | '/customers'
     | '/dashboard'
     | '/payments'
-    | '/reports'
     | '/login'
     | '/cities/$cityId'
     | '/cities/new'
+    | '/coupons/$couponId'
+    | '/coupons/new'
     | '/movies/$movieId'
     | '/movies/new'
     | '/showtimes/$showId'
@@ -271,10 +301,12 @@ export interface FileRouteTypes {
     | '/venues/$venueId'
     | '/venues/new'
     | '/cities/'
+    | '/coupons/'
     | '/movies/'
     | '/showtimes/'
     | '/venues/'
     | '/cities/$cityId/edit'
+    | '/coupons/$couponId/edit'
     | '/movies/$movieId/edit'
     | '/venues/$venueId/edit'
     | '/venues/$venueId/screens/new'
@@ -286,10 +318,11 @@ export interface FileRouteTypes {
     | '/customers'
     | '/dashboard'
     | '/payments'
-    | '/reports'
     | '/login'
     | '/cities/$cityId'
     | '/cities/new'
+    | '/coupons/$couponId'
+    | '/coupons/new'
     | '/movies/$movieId'
     | '/movies/new'
     | '/showtimes/$showId'
@@ -297,10 +330,12 @@ export interface FileRouteTypes {
     | '/venues/$venueId'
     | '/venues/new'
     | '/cities'
+    | '/coupons'
     | '/movies'
     | '/showtimes'
     | '/venues'
     | '/cities/$cityId/edit'
+    | '/coupons/$couponId/edit'
     | '/movies/$movieId/edit'
     | '/venues/$venueId/edit'
     | '/venues/$venueId/screens/new'
@@ -314,10 +349,11 @@ export interface FileRouteTypes {
     | '/_protected/customers'
     | '/_protected/dashboard'
     | '/_protected/payments'
-    | '/_protected/reports'
     | '/_public/login'
     | '/_protected/cities/$cityId'
     | '/_protected/cities/new'
+    | '/_protected/coupons/$couponId'
+    | '/_protected/coupons/new'
     | '/_protected/movies/$movieId'
     | '/_protected/movies/new'
     | '/_protected/showtimes/$showId'
@@ -325,10 +361,12 @@ export interface FileRouteTypes {
     | '/_protected/venues/$venueId'
     | '/_protected/venues/new'
     | '/_protected/cities/'
+    | '/_protected/coupons/'
     | '/_protected/movies/'
     | '/_protected/showtimes/'
     | '/_protected/venues/'
     | '/_protected/cities/$cityId_/edit'
+    | '/_protected/coupons/$couponId_/edit'
     | '/_protected/movies/$movieId_/edit'
     | '/_protected/venues/$venueId_/edit'
     | '/_protected/venues/$venueId_/screens/new'
@@ -392,13 +430,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedPaymentsRouteImport
       parentRoute: typeof ProtectedRoute
     }
-    '/_protected/reports': {
-      id: '/_protected/reports'
-      path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof ProtectedReportsRouteImport
-      parentRoute: typeof ProtectedRoute
-    }
     '/_public/login': {
       id: '/_public/login'
       path: '/login'
@@ -425,6 +456,27 @@ declare module '@tanstack/react-router' {
       path: '/cities/new'
       fullPath: '/cities/new'
       preLoaderRoute: typeof ProtectedCitiesNewRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/coupons/': {
+      id: '/_protected/coupons/'
+      path: '/coupons'
+      fullPath: '/coupons/'
+      preLoaderRoute: typeof ProtectedCouponsIndexRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/coupons/$couponId': {
+      id: '/_protected/coupons/$couponId'
+      path: '/coupons/$couponId'
+      fullPath: '/coupons/$couponId'
+      preLoaderRoute: typeof ProtectedCouponsCouponIdRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/coupons/new': {
+      id: '/_protected/coupons/new'
+      path: '/coupons/new'
+      fullPath: '/coupons/new'
+      preLoaderRoute: typeof ProtectedCouponsNewRouteImport
       parentRoute: typeof ProtectedRoute
     }
     '/_protected/movies/': {
@@ -497,6 +549,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedCitiesCityIdEditRouteImport
       parentRoute: typeof ProtectedRoute
     }
+    '/_protected/coupons/$couponId_/edit': {
+      id: '/_protected/coupons/$couponId_/edit'
+      path: '/coupons/$couponId/edit'
+      fullPath: '/coupons/$couponId/edit'
+      preLoaderRoute: typeof ProtectedCouponsCouponIdEditRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
     '/_protected/movies/$movieId_/edit': {
       id: '/_protected/movies/$movieId_/edit'
       path: '/movies/$movieId/edit'
@@ -533,9 +592,10 @@ interface ProtectedRouteChildren {
   ProtectedCustomersRoute: typeof ProtectedCustomersRoute
   ProtectedDashboardRoute: typeof ProtectedDashboardRoute
   ProtectedPaymentsRoute: typeof ProtectedPaymentsRoute
-  ProtectedReportsRoute: typeof ProtectedReportsRoute
   ProtectedCitiesCityIdRoute: typeof ProtectedCitiesCityIdRoute
   ProtectedCitiesNewRoute: typeof ProtectedCitiesNewRoute
+  ProtectedCouponsCouponIdRoute: typeof ProtectedCouponsCouponIdRoute
+  ProtectedCouponsNewRoute: typeof ProtectedCouponsNewRoute
   ProtectedMoviesMovieIdRoute: typeof ProtectedMoviesMovieIdRoute
   ProtectedMoviesNewRoute: typeof ProtectedMoviesNewRoute
   ProtectedShowtimesShowIdRoute: typeof ProtectedShowtimesShowIdRoute
@@ -543,10 +603,12 @@ interface ProtectedRouteChildren {
   ProtectedVenuesVenueIdRoute: typeof ProtectedVenuesVenueIdRoute
   ProtectedVenuesNewRoute: typeof ProtectedVenuesNewRoute
   ProtectedCitiesIndexRoute: typeof ProtectedCitiesIndexRoute
+  ProtectedCouponsIndexRoute: typeof ProtectedCouponsIndexRoute
   ProtectedMoviesIndexRoute: typeof ProtectedMoviesIndexRoute
   ProtectedShowtimesIndexRoute: typeof ProtectedShowtimesIndexRoute
   ProtectedVenuesIndexRoute: typeof ProtectedVenuesIndexRoute
   ProtectedCitiesCityIdEditRoute: typeof ProtectedCitiesCityIdEditRoute
+  ProtectedCouponsCouponIdEditRoute: typeof ProtectedCouponsCouponIdEditRoute
   ProtectedMoviesMovieIdEditRoute: typeof ProtectedMoviesMovieIdEditRoute
   ProtectedVenuesVenueIdEditRoute: typeof ProtectedVenuesVenueIdEditRoute
   ProtectedVenuesVenueIdScreensNewRoute: typeof ProtectedVenuesVenueIdScreensNewRoute
@@ -558,9 +620,10 @@ const ProtectedRouteChildren: ProtectedRouteChildren = {
   ProtectedCustomersRoute: ProtectedCustomersRoute,
   ProtectedDashboardRoute: ProtectedDashboardRoute,
   ProtectedPaymentsRoute: ProtectedPaymentsRoute,
-  ProtectedReportsRoute: ProtectedReportsRoute,
   ProtectedCitiesCityIdRoute: ProtectedCitiesCityIdRoute,
   ProtectedCitiesNewRoute: ProtectedCitiesNewRoute,
+  ProtectedCouponsCouponIdRoute: ProtectedCouponsCouponIdRoute,
+  ProtectedCouponsNewRoute: ProtectedCouponsNewRoute,
   ProtectedMoviesMovieIdRoute: ProtectedMoviesMovieIdRoute,
   ProtectedMoviesNewRoute: ProtectedMoviesNewRoute,
   ProtectedShowtimesShowIdRoute: ProtectedShowtimesShowIdRoute,
@@ -568,10 +631,12 @@ const ProtectedRouteChildren: ProtectedRouteChildren = {
   ProtectedVenuesVenueIdRoute: ProtectedVenuesVenueIdRoute,
   ProtectedVenuesNewRoute: ProtectedVenuesNewRoute,
   ProtectedCitiesIndexRoute: ProtectedCitiesIndexRoute,
+  ProtectedCouponsIndexRoute: ProtectedCouponsIndexRoute,
   ProtectedMoviesIndexRoute: ProtectedMoviesIndexRoute,
   ProtectedShowtimesIndexRoute: ProtectedShowtimesIndexRoute,
   ProtectedVenuesIndexRoute: ProtectedVenuesIndexRoute,
   ProtectedCitiesCityIdEditRoute: ProtectedCitiesCityIdEditRoute,
+  ProtectedCouponsCouponIdEditRoute: ProtectedCouponsCouponIdEditRoute,
   ProtectedMoviesMovieIdEditRoute: ProtectedMoviesMovieIdEditRoute,
   ProtectedVenuesVenueIdEditRoute: ProtectedVenuesVenueIdEditRoute,
   ProtectedVenuesVenueIdScreensNewRoute: ProtectedVenuesVenueIdScreensNewRoute,
