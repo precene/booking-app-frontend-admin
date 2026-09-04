@@ -83,7 +83,7 @@ export function MovieForm({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <Button asChild aria-label="Back to movies" size="icon" variant="ghost">
+            <Button asChild aria-label="Back To Movies" size="icon" variant="ghost">
               <Link to="/movies">
                 <ArrowLeft className="size-4" />
               </Link>
@@ -221,7 +221,7 @@ export function MovieForm({
                   id="overview"
                   name="overview"
                   onChange={(event) => onUpdateField("overview", event.target.value)}
-                  placeholder="Short movie overview"
+                  placeholder="Short Movie Overview"
                   value={movieForm.overview}
                 />
 
@@ -362,7 +362,7 @@ export function MovieForm({
                 <img alt="" className="size-full object-cover" src={movieForm.posterUrl} />
               ) : (
                 <div className="text-muted flex size-full items-center justify-center px-6 text-center text-sm font-medium">
-                  Poster preview appears here
+                  Poster Preview Appears Here
                 </div>
               )}
             </div>
@@ -379,9 +379,9 @@ export function MovieForm({
               />
 
               <span>
-                <span className="block text-sm font-medium">Active in catalog</span>
+                <span className="block text-sm font-medium">Active In Catalog</span>
                 <span className="text-muted mt-1 block text-sm">
-                  Active movies can be used for show scheduling and customer browsing.
+                  Active Movies Can Be Used For Show Scheduling And Customer Browsing.
                 </span>
               </span>
             </label>

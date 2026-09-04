@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "@tanstack/react-router";
 import { AlertCircle, ArrowLeft, ExternalLink, Pencil } from "lucide-react";
 
+// import { MovieDeleteDialog } from "../components/MovieDeleteDialog";
 import { MovieStatusBadge } from "../components/MovieStatusBadge";
 import { moviesApi } from "../services/moviesApi";
 import type { Movie } from "../types/movieTypes";
@@ -30,6 +31,8 @@ export default function MovieDetailsPage() {
   const [movie, setMovie] = useState<Movie | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // const navigate = useNavigate();
 
   const movieInfo: Array<MovieInfoItem> = movie
     ? [
@@ -92,19 +95,23 @@ export default function MovieDetailsPage() {
       const response = await moviesApi.get(movieId);
       setMovie(response.data.movie);
     } catch (error) {
-      setErrorMessage(getApiErrorMessage(error, "Unable to load movie details."));
+      setErrorMessage(getApiErrorMessage(error, "Unable To Load Movie Details."));
       setMovie(null);
     } finally {
       setIsLoading(false);
     }
   }
 
+  // function handleMovieDeleted() {
+  //   void navigate({ to: "/movies" });
+  // }
+
   return (
     <section className="space-y-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <Button asChild aria-label="Back to movies" size="icon" variant="ghost">
+            <Button asChild aria-label="Back To Movies" size="icon" variant="ghost">
               <Link to="/movies">
                 <ArrowLeft className="size-3" />
               </Link>
@@ -114,7 +121,7 @@ export default function MovieDetailsPage() {
           </div>
 
           <p className="text-muted mt-2 text-sm">
-            View movie metadata, media, availability, and linked show schedules.
+            View Movie Metadata, Media, Availability, And Linked Show Schedules.
           </p>
         </div>
 
@@ -135,6 +142,8 @@ export default function MovieDetailsPage() {
                 Edit
               </Link>
             </Button>
+
+            {/* <MovieDeleteDialog movie={movie} onDeleted={handleMovieDeleted} /> */}
           </div>
         ) : null}
       </div>

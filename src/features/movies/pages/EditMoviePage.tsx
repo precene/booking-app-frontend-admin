@@ -42,7 +42,7 @@ export default function EditMoviePage() {
       const response = await moviesApi.get(movieId);
       setMovieForm(getMovieFormValues(response.data.movie));
     } catch (error) {
-      setFormError(getApiErrorMessage(error, "Unable to load movie details."));
+      setFormError(getApiErrorMessage(error, "Unable To Load Movie Details."));
     } finally {
       setIsLoading(false);
     }
@@ -78,7 +78,7 @@ export default function EditMoviePage() {
       toast.success({ title: "Movie Updated." });
       void navigate({ params: { movieId: movie.id }, to: "/movies/$movieId" });
     } catch (error) {
-      setFormError(getApiErrorMessage(error, "Unable to update movie."));
+      setFormError(getApiErrorMessage(error, "Unable To Update Movie."));
     } finally {
       setIsSubmitting(false);
     }
@@ -99,7 +99,7 @@ export default function EditMoviePage() {
         </div>
       ) : (
         <MovieForm
-          description="Update movie metadata, media links, and availability status."
+          description="Update Movie Metadata, Media Links, And Availability Status."
           errors={errors}
           formId={formId}
           isSubmitting={isSubmitting}

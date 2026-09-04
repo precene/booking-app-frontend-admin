@@ -40,9 +40,10 @@ export const moviesApi = {
     return response.data;
   },
 
-  delete: async (id: string) => {
-    await apiClient.delete(`/admin/movies/${id}`);
-  },
+  // Movie delete is intentionally disabled in the admin UI for now.
+  // delete: async (id: string) => {
+  //   await apiClient.delete(`/admin/movies/${id}`);
+  // },
 
   listVenueMovies: async (venueId: string) => {
     const response = await apiClient.get<ApiResponse<{ movies: Array<Movie> }>>(

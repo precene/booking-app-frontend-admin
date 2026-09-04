@@ -108,7 +108,7 @@ export default function CitiesPage() {
       const response = await citiesApi.list(query);
       setCities(response.data);
     } catch (error) {
-      setErrorMessage(getApiErrorMessage(error, "Unable to load cities."));
+      setErrorMessage(getApiErrorMessage(error, "Unable To Load Cities."));
     } finally {
       setIsLoading(false);
     }
@@ -189,7 +189,7 @@ export default function CitiesPage() {
             Search
           </Button>
           <Button
-            aria-label="Reset city filters"
+            aria-label="Reset City Filters"
             disabled={isLoading}
             onClick={handleResetFilters}
             type="button"
@@ -227,7 +227,7 @@ export default function CitiesPage() {
           },
           total: cities.total,
         }}
-        resultLabel="cities"
+        resultLabel="Cities"
       />
     </section>
   );

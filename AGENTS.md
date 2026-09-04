@@ -70,13 +70,11 @@ features/
 - Use shared validation helpers such as `getFormValidationErrors`; avoid page-local error mappers.
 - Let `oxfmt` handle formatting; do not add Prettier.
 
-## RBF Review
+## RBF Reviews
 
 - When the user says `Do RBF`, perform a frontend/backend alignment review.
 - Review business logic consistency across frontend behavior, frontend validation, API services, backend routes, backend schemas, database columns, and backend services.
 - Identify frontend bugs, missing states, broken route/API contracts, validation gaps, security issues, performance concerns, scalability risks, and maintainability problems.
 - Since the backend is read-only, summarize backend-side issues clearly for the backend developer instead of editing backend files.
-- After reviewing, add findings directly to the `977Cinema` Trello board using the `Admin` label.
-- Put cards in `Frontend Issues`, `Backend Issues`, or `Bugs/Issues` based on ownership. Fixed work moves to `Review Issues` first, and only after review passes should it move to `Issues Fixed`.
-- Before creating a Trello card, search existing cards for duplicates. If a similar card exists, compare the issue details and update the existing card instead of creating a duplicate.
-- Present RBF output in review style: findings first, ordered by severity with file/line references when available, followed by assumptions, backend notes, and suggested frontend fixes.
+- Present review output in Codex in review style: findings first, ordered by severity with file/line references when available, followed by assumptions, backend notes, and suggested frontend fixes.
+- Do not create, update, or move Trello cards after RBF unless the user explicitly asks for Trello updates.

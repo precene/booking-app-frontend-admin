@@ -52,10 +52,10 @@ export default function CreateMoviePage() {
 
     try {
       await moviesApi.create(validation.data);
-      toast.success({ title: "Movie created." });
+      toast.success({ title: "Movie Created." });
       void navigate({ to: "/movies" });
     } catch (error) {
-      setFormError(getApiErrorMessage(error, "Unable to create movie."));
+      setFormError(getApiErrorMessage(error, "Unable To Create Movie."));
     } finally {
       setIsSubmitting(false);
     }
@@ -71,7 +71,7 @@ export default function CreateMoviePage() {
       ) : null}
 
       <MovieForm
-        description="Create a catalog entry with movie metadata, media links, and availability status."
+        description="Create A Catalog Entry With Movie Metadata, Media Links, And Availability Status."
         errors={errors}
         formId={formId}
         isSubmitting={isSubmitting}

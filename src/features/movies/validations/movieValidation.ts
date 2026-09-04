@@ -1,5 +1,5 @@
-import { z } from "zod";
 import { DateTime } from "luxon";
+import { z } from "zod";
 
 const releaseDateSchema = z
   .string()
@@ -15,46 +15,47 @@ const releaseDateSchema = z
     }
   });
 
-const trailerUrlSchema = z
-  .string()
-  .trim()
-  .superRefine((value, context) => {
-    if (!value) {
-      context.addIssue({ code: "custom", message: "Trailer URL is required" });
-      return;
-    }
+const urlFieldSchema = (label: string) =>
+  z
+    .string()
+    .trim()
+    .superRefine((value, context) => {
+      if (!value) {
+        context.addIssue({ code: "custom", message: `${label} Is Required` });
+        return;
+      }
 
-    if (value.length > 2048) {
-      context.addIssue({
-        code: "custom",
-        message: "Trailer URL must be at most 2048 characters",
-      });
-      return;
-    }
+      if (value.length > 2048) {
+        context.addIssue({
+          code: "custom",
+          message: `${label} Must Be At Most 2048 Characters`,
+        });
+        return;
+      }
 
-    if (!isValidUrl(value)) {
-      context.addIssue({ code: "custom", message: "Trailer URL must be a valid URL" });
-    }
-  });
+      if (!isValidUrl(value)) {
+        context.addIssue({ code: "custom", message: `${label} Must Be A Valid URL` });
+      }
+    });
 
 const creditListSchema = z
-  .array(z.string().trim().min(1, "Credit name is required").max(80))
-  .max(30, "At most 30 names are allowed")
+  .array(z.string().trim().min(1, "Credit Name Is Required").max(80, "Credit Name Is Too Long"))
+  .max(30, "At Most 30 Names Are Allowed")
   .optional();
 
 export const movieSchema = z.object({
-  title: z.string().trim().min(1, "Title is required").max(255),
-  overview: z.string().trim().min(1, "Overview is required").max(5000),
-  posterUrl: z.string().trim().min(1, "Poster URL is required").max(2048),
-  coverImage: z.string().trim().min(1, "Cover Image URL Is Required").max(2048),
-  trailerUrl: trailerUrlSchema,
+  title: z.string().trim().min(1, "Title Is Required").max(255, "Title Is Too Long"),
+  overview: z.string().trim().min(1, "Overview Is Required").max(5000, "Overview Is Too Long"),
+  posterUrl: urlFieldSchema("Poster URL"),
+  coverImage: urlFieldSchema("Cover Image URL"),
+  trailerUrl: urlFieldSchema("Trailer URL"),
   durationMinutes: z
     .number()
     .int()
-    .min(1, "Duration must be at least 1 minute")
-    .max(600, "Duration must be at most 600 minutes"),
-  ageRating: z.string().trim().min(1, "Age Rating Is Required").max(20),
-  genre: z.string().trim().min(1, "Genre is required").max(50),
+    .min(1, "Duration Must Be At Least 1 Minute")
+    .max(600, "Duration Must Be At Most 600 Minutes"),
+  ageRating: z.string().trim().min(1, "Age Rating Is Required").max(20, "Age Rating Is Too Long"),
+  genre: z.string().trim().min(1, "Genre Is Required").max(50, "Genre Is Too Long"),
   directors: creditListSchema,
   producers: creditListSchema,
   writers: creditListSchema,

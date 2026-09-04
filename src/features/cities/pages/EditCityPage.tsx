@@ -42,7 +42,7 @@ export default function EditCityPage() {
       const response = await citiesApi.get(cityId);
       setCityForm(getCityFormValues(response.data.city));
     } catch (error) {
-      setFormError(getApiErrorMessage(error, "Unable to load city details."));
+      setFormError(getApiErrorMessage(error, "Unable To Load City Details."));
     } finally {
       setIsLoading(false);
     }
@@ -78,7 +78,7 @@ export default function EditCityPage() {
       toast.success({ title: "City Updated." });
       void navigate({ params: { cityId: city.id }, to: "/cities/$cityId" });
     } catch (error) {
-      setFormError(getApiErrorMessage(error, "Unable to update city."));
+      setFormError(getApiErrorMessage(error, "Unable To Update City."));
     } finally {
       setIsSubmitting(false);
     }

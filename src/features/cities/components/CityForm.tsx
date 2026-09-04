@@ -58,7 +58,7 @@ export function CityForm({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <Button asChild aria-label="Back to cities" size="icon" variant="ghost">
+            <Button asChild aria-label="Back To Cities" size="icon" variant="ghost">
               <Link to="/cities">
                 <ArrowLeft className="size-4" />
               </Link>

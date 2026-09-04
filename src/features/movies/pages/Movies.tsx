@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { AlertCircle, Eye, FilterX, Pencil, Plus, RefreshCcw, Search } from "lucide-react";
 
+// import { MovieDeleteDialog } from "../components/MovieDeleteDialog";
 import { moviesApi } from "../services/moviesApi";
 import type { ListMoviesQuery, Movie } from "../types/movieTypes";
 import {
@@ -100,6 +101,8 @@ export default function Movies() {
                   Edit
                 </Link>
               </Button>
+
+              {/* <MovieDeleteDialog movie={movie} onDeleted={handleMovieDeleted} size="sm" /> */}
             </div>
           );
         },
@@ -121,7 +124,7 @@ export default function Movies() {
       const response = await moviesApi.list(query);
       setMovies(response.data);
     } catch (error) {
-      setErrorMessage(getApiErrorMessage(error, "Unable to load movies."));
+      setErrorMessage(getApiErrorMessage(error, "Unable To Load Movies."));
     } finally {
       setIsLoading(false);
     }
@@ -157,13 +160,22 @@ export default function Movies() {
     setPage(nextPage);
   }
 
+  // function handleMovieDeleted() {
+  //   if (movies.items.length === 1 && page > 1) {
+  //     setPage((currentPage) => currentPage - 1);
+  //     return;
+  //   }
+  //
+  //   void loadMovies();
+  // }
+
   return (
     <section className="space-y-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h2 className="text-2xl font-semibold tracking-normal">Movies</h2>
           <p className="text-muted mt-2 text-sm">
-            Manage movie listings, posters, metadata, release details, and catalog availability.
+            Manage Movie Listings, Posters, Metadata, Release Details, And Catalog Availability.
           </p>
         </div>
 
@@ -180,7 +192,7 @@ export default function Movies() {
         onSubmit={handleSearch}
       >
         <div>
-          <Label htmlFor="movie-search">Search by title</Label>
+          <Label htmlFor="movie-search">Search By Title</Label>
 
           <div className="relative">
             <Search className="text-muted pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
@@ -189,7 +201,7 @@ export default function Movies() {
               disabled={isLoading}
               id="movie-search"
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Movie title"
+              placeholder="Movie Title"
               type="search"
               value={search}
             />
@@ -201,7 +213,7 @@ export default function Movies() {
             Search
           </Button>
           <Button
-            aria-label="Reset movie filters"
+            aria-label="Reset Movie Filters"
             disabled={isLoading}
             onClick={handleResetFilters}
             type="button"
@@ -239,7 +251,7 @@ export default function Movies() {
           },
           total: movies.total,
         }}
-        resultLabel="movies"
+        resultLabel="Movies"
       />
     </section>
   );

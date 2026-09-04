@@ -7,8 +7,8 @@ export const citySchema = z.object({
   slug: z
     .string()
     .trim()
-    .regex(slugPattern, "Use lowercase letters, numbers, and hyphens only")
-    .max(80, "Slug is too long")
+    .regex(slugPattern, "Use Lowercase Letters, Numbers, And Hyphens Only")
+    .max(80, "Slug Is Too Long")
     .optional(),
   active: z.boolean().optional(),
 });

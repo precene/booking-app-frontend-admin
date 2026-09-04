@@ -34,7 +34,8 @@ export const citiesApi = {
     return response.data;
   },
 
-  delete: async (id: string) => {
-    await apiClient.delete(`/admin/cities/${id}`);
-  },
+  // City delete is intentionally disabled in the admin UI for now.
+  // delete: async (id: string) => {
+  //   await apiClient.delete(`/admin/cities/${id}`);
+  // },
 };

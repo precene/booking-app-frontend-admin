@@ -130,7 +130,7 @@ export default function CityDetailsPage() {
       const response = await citiesApi.get(cityId);
       setCity(response.data.city);
     } catch (error) {
-      setCityErrorMessage(getApiErrorMessage(error, "Unable to load city details."));
+      setCityErrorMessage(getApiErrorMessage(error, "Unable To Load City Details."));
       setCity(null);
     } finally {
       setIsCityLoading(false);
@@ -146,7 +146,7 @@ export default function CityDetailsPage() {
       const response = await venuesApi.list(query);
       setVenues(response.data);
     } catch (error) {
-      setVenuesErrorMessage(getApiErrorMessage(error, "Unable to load city venues."));
+      setVenuesErrorMessage(getApiErrorMessage(error, "Unable To Load City Venues."));
       setVenues(initialVenues);
     } finally {
       setIsVenuesLoading(false);
@@ -175,7 +175,7 @@ export default function CityDetailsPage() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <Button asChild aria-label="Back to cities" size="icon" variant="ghost">
+            <Button asChild aria-label="Back To Cities" size="icon" variant="ghost">
               <Link to="/cities">
                 <ArrowLeft className="size-4" />
               </Link>
@@ -280,7 +280,7 @@ export default function CityDetailsPage() {
             },
             total: venues.total,
           }}
-          resultLabel="venues"
+          resultLabel="Venues"
         />
       </div>
     </section>
