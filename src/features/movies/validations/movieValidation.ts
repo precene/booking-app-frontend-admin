@@ -6,12 +6,12 @@ const releaseDateSchema = z
   .trim()
   .superRefine((value, context) => {
     if (!value) {
-      context.addIssue({ code: "custom", message: "Release date is required" });
+      context.addIssue({ code: "custom", message: "Release Date Is Required" });
       return;
     }
 
     if (!isTodayOrFutureDate(value)) {
-      context.addIssue({ code: "custom", message: "Release date cannot be in the past" });
+      context.addIssue({ code: "custom", message: "Release Date Cannot Be In The Past" });
     }
   });
 
@@ -46,14 +46,14 @@ export const movieSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(255),
   overview: z.string().trim().min(1, "Overview is required").max(5000),
   posterUrl: z.string().trim().min(1, "Poster URL is required").max(2048),
-  coverImage: z.string().trim().min(1, "Cover image URL is required").max(2048),
+  coverImage: z.string().trim().min(1, "Cover Image URL Is Required").max(2048),
   trailerUrl: trailerUrlSchema,
   durationMinutes: z
     .number()
     .int()
     .min(1, "Duration must be at least 1 minute")
     .max(600, "Duration must be at most 600 minutes"),
-  ageRating: z.string().trim().min(1, "Age rating is required").max(20),
+  ageRating: z.string().trim().min(1, "Age Rating Is Required").max(20),
   genre: z.string().trim().min(1, "Genre is required").max(50),
   directors: creditListSchema,
   producers: creditListSchema,

@@ -76,5 +76,7 @@ features/
 - Review business logic consistency across frontend behavior, frontend validation, API services, backend routes, backend schemas, database columns, and backend services.
 - Identify frontend bugs, missing states, broken route/API contracts, validation gaps, security issues, performance concerns, scalability risks, and maintainability problems.
 - Since the backend is read-only, summarize backend-side issues clearly for the backend developer instead of editing backend files.
-- After reviewing, write the findings into `issues.md` at the project root for future fixes.
+- After reviewing, add findings directly to the `977Cinema` Trello board using the `Admin` label.
+- Put cards in `Frontend Issues`, `Backend Issues`, or `Bugs/Issues` based on ownership. Fixed work moves to `Review Issues` first, and only after review passes should it move to `Issues Fixed`.
+- Before creating a Trello card, search existing cards for duplicates. If a similar card exists, compare the issue details and update the existing card instead of creating a duplicate.
 - Present RBF output in review style: findings first, ordered by severity with file/line references when available, followed by assumptions, backend notes, and suggested frontend fixes.

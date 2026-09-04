@@ -64,24 +64,8 @@ export const couponSchema = z
     }
   });
 
-export const couponUpdateSchema = z
-  .object({
-    active: z.boolean().optional(),
-    maxUses: z.number().int().min(1, "Max uses must be at least 1").nullable().optional(),
-    validUntil: couponDateSchema.nullable(),
-  })
-  .superRefine((value, context) => {
-    if (!value.validUntil) {
-      return;
-    }
-
-    const validUntil = DateTime.fromISO(value.validUntil);
-
-    if (validUntil.isValid && validUntil.endOf("day") < DateTime.now().startOf("day")) {
-      context.addIssue({
-        code: "custom",
-        message: "End date cannot be in the past",
-        path: ["validUntil"],
-      });
-    }
-  });
+export const couponUpdateSchema = z.object({
+  active: z.boolean().optional(),
+  maxUses: z.number().int().min(1, "Max uses must be at least 1").nullable().optional(),
+  validUntil: couponDateSchema.nullable(),
+});

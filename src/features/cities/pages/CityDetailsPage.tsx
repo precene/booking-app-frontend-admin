@@ -57,7 +57,7 @@ export default function CityDetailsPage() {
           value: formatCityDate(city.createdAt),
         },
         {
-          label: "Last updated",
+          label: "Last Updated",
           value: formatCityDate(city.updatedAt),
         },
       ]
@@ -185,7 +185,7 @@ export default function CityDetailsPage() {
           </div>
 
           <p className="text-muted mt-2 text-sm">
-            View city metadata, availability, and venues connected to this service area.
+            View City Metadata, Availability, And Venues Connected To This Service Area.
           </p>
         </div>
 
@@ -208,7 +208,7 @@ export default function CityDetailsPage() {
 
       {isCityLoading ? (
         <div className="bg-surface rounded-lg border p-6 shadow-sm">
-          <p className="text-muted text-sm font-medium">Loading city details...</p>
+          <p className="text-muted text-sm font-medium">Loading City Details...</p>
         </div>
       ) : null}
 
@@ -249,7 +249,7 @@ export default function CityDetailsPage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="text-xl font-semibold tracking-normal">Venues</h3>
-            <p className="text-muted mt-1 text-sm">Venues assigned to this city.</p>
+            <p className="text-muted mt-1 text-sm">Venues Assigned To This City.</p>
           </div>
 
           <Button disabled={isVenuesLoading} onClick={loadVenues} type="button" variant="outline">
@@ -268,8 +268,8 @@ export default function CityDetailsPage() {
         <DataTable
           columns={venueColumns}
           data={venues.items}
-          emptyMessage={isVenuesLoading ? "Loading venues..." : "No venues found for this city."}
-          loadingMessage="Loading venues..."
+          emptyMessage={isVenuesLoading ? "Loading Venues..." : "No Venues Found For This City."}
+          loadingMessage="Loading Venues..."
           pagination={{
             isLoading: isVenuesLoading,
             limit: venues.limit,

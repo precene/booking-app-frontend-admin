@@ -150,7 +150,7 @@ export default function CitiesPage() {
         <div>
           <h2 className="text-2xl font-semibold tracking-normal">Cities</h2>
           <p className="text-muted mt-2 text-sm">
-            Manage service cities, slugs, resolved timezones, and catalog availability.
+            Manage Service Cities, Slugs, Resolved Timezones, And Catalog Availability.
           </p>
         </div>
 
@@ -167,7 +167,7 @@ export default function CitiesPage() {
         onSubmit={handleSearch}
       >
         <div>
-          <Label htmlFor="city-search">Search by name</Label>
+          <Label htmlFor="city-search">Search By Name</Label>
 
           <div className="relative">
             <Search className="text-muted pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
@@ -177,7 +177,7 @@ export default function CitiesPage() {
               id="city-search"
               maxLength={100}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="City name"
+              placeholder="City Name"
               type="search"
               value={search}
             />
@@ -215,8 +215,8 @@ export default function CitiesPage() {
       <DataTable
         columns={columns}
         data={cities.items}
-        emptyMessage={isLoading ? "Loading cities..." : "No cities found."}
-        loadingMessage="Loading cities..."
+        emptyMessage={isLoading ? "Loading Cities..." : "No Cities Found."}
+        loadingMessage="Loading Cities..."
         pagination={{
           isLoading,
           limit: cities.limit,

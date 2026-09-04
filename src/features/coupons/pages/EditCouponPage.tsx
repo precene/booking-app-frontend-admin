@@ -105,7 +105,7 @@ export default function EditCouponPage() {
 
       {isLoading ? (
         <div className="bg-surface rounded-lg border p-6 shadow-sm">
-          <p className="text-muted text-sm font-medium">Loading coupon details...</p>
+          <p className="text-muted text-sm font-medium">Loading Coupon Details...</p>
         </div>
       ) : null}
 
@@ -113,7 +113,7 @@ export default function EditCouponPage() {
         <CouponEditForm
           coupon={coupon}
           couponForm={couponForm}
-          description="Update coupon availability, expiry, and usage limits."
+          description="Update Coupon Availability, Expiry, And Usage Limits."
           errors={errors}
           formId={formId}
           isSubmitting={isSubmitting}

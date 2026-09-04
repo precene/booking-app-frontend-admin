@@ -75,7 +75,7 @@ export default function EditMoviePage() {
       const response = await moviesApi.update(movieId, validation.data);
       const movie = response.data.movie;
 
-      toast.success({ title: "Movie updated." });
+      toast.success({ title: "Movie Updated." });
       void navigate({ params: { movieId: movie.id }, to: "/movies/$movieId" });
     } catch (error) {
       setFormError(getApiErrorMessage(error, "Unable to update movie."));
@@ -95,7 +95,7 @@ export default function EditMoviePage() {
 
       {isLoading ? (
         <div className="bg-surface rounded-lg border p-6 shadow-sm">
-          <p className="text-muted text-sm font-medium">Loading movie details...</p>
+          <p className="text-muted text-sm font-medium">Loading Movie Details...</p>
         </div>
       ) : (
         <MovieForm

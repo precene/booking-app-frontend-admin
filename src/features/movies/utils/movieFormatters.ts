@@ -17,18 +17,18 @@ export function formatMovieDuration(durationMinutes: number) {
 
 export function formatMovieDate(date: string | null) {
   if (!date) {
-    return "Not set";
+    return "Not Set";
   }
 
   const parsedDate = DateTime.fromISO(date);
 
   if (!parsedDate.isValid) {
-    return "Invalid date";
+    return "Invalid Date";
   }
 
   return parsedDate.toFormat("dd LLL yyyy");
 }
 
-export function formatOptionalMovieValue(value: string | null, fallback = "Not set") {
+export function formatOptionalMovieValue(value: string | null, fallback = "Not Set") {
   return value?.trim() ? value : fallback;
 }

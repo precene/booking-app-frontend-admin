@@ -49,7 +49,7 @@ export default function Movies() {
                 {movie.posterUrl ? (
                   <img alt="" className="size-full object-cover" src={movie.posterUrl} />
                 ) : (
-                  <span className="text-muted text-xs font-medium">No poster</span>
+                  <span className="text-muted text-xs font-medium">No Poster</span>
                 )}
               </div>
 
@@ -76,7 +76,7 @@ export default function Movies() {
       },
       {
         accessorKey: "releaseDate",
-        header: "Release date",
+        header: "Release Date",
         cell: ({ row }) => formatMovieDate(row.original.releaseDate),
       },
       {
@@ -227,8 +227,8 @@ export default function Movies() {
       <DataTable
         columns={columns}
         data={movies.items}
-        emptyMessage={isLoading ? "Loading movies..." : "No movies found."}
-        loadingMessage="Loading movies..."
+        emptyMessage={isLoading ? "Loading Movies..." : "No Movies Found."}
+        loadingMessage="Loading Movies..."
         pagination={{
           isLoading,
           limit: movies.limit,

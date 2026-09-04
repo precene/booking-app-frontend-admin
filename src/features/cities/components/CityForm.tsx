@@ -91,7 +91,7 @@ export function CityForm({
 
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="name">City name</Label>
+              <Label htmlFor="name">City Name</Label>
               <Input
                 aria-describedby={errors.name ? "name-error" : undefined}
                 aria-invalid={Boolean(errors.name)}
@@ -145,9 +145,9 @@ export function CityForm({
               />
 
               <span>
-                <span className="block text-sm font-medium">Active city</span>
+                <span className="block text-sm font-medium">Active City</span>
                 <span className="text-muted mt-1 block text-sm">
-                  Active cities can be assigned to venues and used in the catalog.
+                  Active Cities Can Be Assigned To Venues And Used In The Catalog.
                 </span>
               </span>
             </label>

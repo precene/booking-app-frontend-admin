@@ -3,7 +3,7 @@ import { z } from "zod";
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export const citySchema = z.object({
-  name: z.string().trim().min(1, "City name is required").max(160, "City name is too long"),
+  name: z.string().trim().min(1, "City Name Is Required").max(160, "City Name Is Too Long"),
   slug: z
     .string()
     .trim()

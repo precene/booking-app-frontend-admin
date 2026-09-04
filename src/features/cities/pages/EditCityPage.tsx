@@ -75,7 +75,7 @@ export default function EditCityPage() {
       const response = await citiesApi.update(cityId, validation.data);
       const city = response.data.city;
 
-      toast.success({ title: "City updated." });
+      toast.success({ title: "City Updated." });
       void navigate({ params: { cityId: city.id }, to: "/cities/$cityId" });
     } catch (error) {
       setFormError(getApiErrorMessage(error, "Unable to update city."));
@@ -95,12 +95,12 @@ export default function EditCityPage() {
 
       {isLoading ? (
         <div className="bg-surface rounded-lg border p-6 shadow-sm">
-          <p className="text-muted text-sm font-medium">Loading city details...</p>
+          <p className="text-muted text-sm font-medium">Loading City Details...</p>
         </div>
       ) : (
         <CityForm
           cityForm={cityForm}
-          description="Update city routing and availability settings."
+          description="Update City Routing And Availability Settings."
           errors={errors}
           formId={formId}
           isSubmitting={isSubmitting}

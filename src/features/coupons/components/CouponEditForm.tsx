@@ -130,7 +130,7 @@ export function CouponEditForm({
                 <span>
                   <span className="block text-sm font-medium">Active Coupon</span>
                   <span className="text-muted mt-1 block text-sm">
-                    Active coupons can be validated and applied during booking.
+                    Active Coupons Can Be Validated And Applied During Booking.
                   </span>
                 </span>
               </label>
@@ -173,7 +173,6 @@ export function CouponEditForm({
                 <DatePicker
                   aria-describedby={errors.validUntil ? "valid-until-error" : undefined}
                   aria-invalid={Boolean(errors.validUntil)}
-                  disablePast
                   id="validUntil"
                   name="validUntil"
                   onValueChange={(value) => onUpdateField("validUntil", value)}
