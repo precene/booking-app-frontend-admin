@@ -2,5 +2,6 @@
   "sortTailwindcss": {
     "functions": ["clsx", "cn"],
     "preserveWhitespace": true
-  }
+  },
+  "ignorePatterns": ["**/routeTree.gen.ts"]
 }

@@ -95,7 +95,7 @@ export default function MovieDetailsPage() {
       const response = await moviesApi.get(movieId);
       setMovie(response.data.movie);
     } catch (error) {
-      setErrorMessage(getApiErrorMessage(error, "Unable To Load Movie Details."));
+      setErrorMessage(getApiErrorMessage(error, "Unable to load movie details."));
       setMovie(null);
     } finally {
       setIsLoading(false);
@@ -121,7 +121,7 @@ export default function MovieDetailsPage() {
           </div>
 
           <p className="text-muted mt-2 text-sm">
-            View Movie Metadata, Media, Availability, And Linked Show Schedules.
+            View movie metadata, media, availability, and linked show schedules.
           </p>
         </div>
 
@@ -157,7 +157,7 @@ export default function MovieDetailsPage() {
 
       {isLoading ? (
         <div className="bg-surface rounded-lg border p-6 shadow-sm">
-          <p className="text-muted text-sm font-medium">Loading Movie Details...</p>
+          <p className="text-muted text-sm font-medium">Loading movie details...</p>
         </div>
       ) : null}
 
@@ -169,7 +169,7 @@ export default function MovieDetailsPage() {
                 <img alt={movie.title} className="size-full object-cover" src={movie.posterUrl} />
               ) : (
                 <div className="text-muted flex size-full items-center justify-center px-6 text-center text-sm font-medium">
-                  No Poster Image Added
+                  No poster image added.
                 </div>
               )}
             </div>
@@ -183,7 +183,7 @@ export default function MovieDetailsPage() {
               </div>
 
               <p className="text-muted mt-3 text-sm leading-6">
-                {formatOptionalMovieValue(movie.overview, "No Overview Added.")}
+                {formatOptionalMovieValue(movie.overview, "No overview added.")}
               </p>
             </div>
 
@@ -230,7 +230,7 @@ export default function MovieDetailsPage() {
                         {movie.posterUrl}
                       </a>
                     ) : (
-                      "Not Set"
+                      "Not set"
                     )}
                   </dd>
                 </div>
@@ -248,7 +248,7 @@ export default function MovieDetailsPage() {
                         {movie.coverImage}
                       </a>
                     ) : (
-                      "Not Set"
+                      "Not set"
                     )}
                   </dd>
                 </div>
@@ -266,7 +266,7 @@ export default function MovieDetailsPage() {
                         {movie.trailerUrl}
                       </a>
                     ) : (
-                      "Not Set"
+                      "Not set"
                     )}
                   </dd>
                 </div>
@@ -280,5 +280,5 @@ export default function MovieDetailsPage() {
 }
 
 function formatCreditList(values: Array<string>) {
-  return values.length ? values.join(", ") : "Not Set";
+  return values.length ? values.join(", ") : "Not set";
 }

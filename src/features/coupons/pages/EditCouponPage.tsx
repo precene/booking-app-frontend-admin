@@ -1,5 +1,6 @@
 import { useEffect, useState, type SubmitEvent } from "react";
 import { useNavigate, useParams } from "@tanstack/react-router";
+import { DateTime } from "luxon";
 import { AlertCircle } from "lucide-react";
 
 import {
@@ -78,6 +79,26 @@ export default function EditCouponPage() {
       return;
     }
 
+    if (
+      coupon &&
+      validation.data.maxUses !== null &&
+      validation.data.maxUses !== undefined &&
+      validation.data.maxUses < coupon.currentUses
+    ) {
+      setErrors({ maxUses: `Max uses cannot be less than current uses (${coupon.currentUses})` });
+      return;
+    }
+
+    if (coupon && validation.data.validUntil) {
+      const validFrom = DateTime.fromISO(coupon.validFrom);
+      const validUntil = DateTime.fromISO(validation.data.validUntil);
+
+      if (validFrom.isValid && validUntil.isValid && validUntil < validFrom) {
+        setErrors({ validUntil: "End date cannot be before start date" });
+        return;
+      }
+    }
+
     setErrors({});
     setIsSubmitting(true);
 
@@ -105,7 +126,7 @@ export default function EditCouponPage() {
 
       {isLoading ? (
         <div className="bg-surface rounded-lg border p-6 shadow-sm">
-          <p className="text-muted text-sm font-medium">Loading Coupon Details...</p>
+          <p className="text-muted text-sm font-medium">Loading coupon details...</p>
         </div>
       ) : null}
 
@@ -113,7 +134,7 @@ export default function EditCouponPage() {
         <CouponEditForm
           coupon={coupon}
           couponForm={couponForm}
-          description="Update Coupon Availability, Expiry, And Usage Limits."
+          description="Update coupon availability, expiry, and usage limits."
           errors={errors}
           formId={formId}
           isSubmitting={isSubmitting}

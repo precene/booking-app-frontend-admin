@@ -3,7 +3,6 @@ import type {
   Movie,
   MoviePayload,
   MovieUpdatePayload,
-  SetVenueMoviesPayload,
 } from "../types/movieTypes";
 
 import { apiClient } from "#/shared/services/apiClient";
@@ -45,20 +44,4 @@ export const moviesApi = {
   //   await apiClient.delete(`/admin/movies/${id}`);
   // },
 
-  listVenueMovies: async (venueId: string) => {
-    const response = await apiClient.get<ApiResponse<{ movies: Array<Movie> }>>(
-      `/admin/venues/${venueId}/movies`,
-    );
-
-    return response.data;
-  },
-
-  setVenueMovies: async (venueId: string, payload: SetVenueMoviesPayload) => {
-    const response = await apiClient.put<ApiResponse<{ movies: Array<Movie> }>>(
-      `/admin/venues/${venueId}/movies`,
-      payload,
-    );
-
-    return response.data;
-  },
 };

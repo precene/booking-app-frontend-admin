@@ -12,17 +12,19 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProtectedRouteImport } from './routes/_protected'
 import { Route as PublicRouteImport } from './routes/_public'
-import { Route as ProtectedBookingsRouteImport } from './routes/_protected.bookings'
-import { Route as ProtectedCustomersRouteImport } from './routes/_protected.customers'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected.dashboard'
 import { Route as ProtectedPaymentsRouteImport } from './routes/_protected.payments'
 import { Route as PublicLoginRouteImport } from './routes/_public.login'
+import { Route as ProtectedBookingsIndexRouteImport } from './routes/_protected.bookings.index'
+import { Route as ProtectedBookingsBookingIdRouteImport } from './routes/_protected.bookings.$bookingId'
 import { Route as ProtectedCitiesIndexRouteImport } from './routes/_protected.cities.index'
 import { Route as ProtectedCitiesCityIdRouteImport } from './routes/_protected.cities.$cityId'
 import { Route as ProtectedCitiesNewRouteImport } from './routes/_protected.cities.new'
 import { Route as ProtectedCouponsIndexRouteImport } from './routes/_protected.coupons.index'
 import { Route as ProtectedCouponsCouponIdRouteImport } from './routes/_protected.coupons.$couponId'
 import { Route as ProtectedCouponsNewRouteImport } from './routes/_protected.coupons.new'
+import { Route as ProtectedCustomersIndexRouteImport } from './routes/_protected.customers.index'
+import { Route as ProtectedCustomersCustomerIdRouteImport } from './routes/_protected.customers.$customerId'
 import { Route as ProtectedMoviesIndexRouteImport } from './routes/_protected.movies.index'
 import { Route as ProtectedMoviesMovieIdRouteImport } from './routes/_protected.movies.$movieId'
 import { Route as ProtectedMoviesNewRouteImport } from './routes/_protected.movies.new'
@@ -52,16 +54,6 @@ const PublicRoute = PublicRouteImport.update({
   id: '/_public',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProtectedBookingsRoute = ProtectedBookingsRouteImport.update({
-  id: '/bookings',
-  path: '/bookings',
-  getParentRoute: () => ProtectedRoute,
-} as any)
-const ProtectedCustomersRoute = ProtectedCustomersRouteImport.update({
-  id: '/customers',
-  path: '/customers',
-  getParentRoute: () => ProtectedRoute,
-} as any)
 const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -77,6 +69,17 @@ const PublicLoginRoute = PublicLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => PublicRoute,
 } as any)
+const ProtectedBookingsIndexRoute = ProtectedBookingsIndexRouteImport.update({
+  id: '/bookings/',
+  path: '/bookings/',
+  getParentRoute: () => ProtectedRoute,
+} as any)
+const ProtectedBookingsBookingIdRoute =
+  ProtectedBookingsBookingIdRouteImport.update({
+    id: '/bookings/$bookingId',
+    path: '/bookings/$bookingId',
+    getParentRoute: () => ProtectedRoute,
+  } as any)
 const ProtectedCitiesIndexRoute = ProtectedCitiesIndexRouteImport.update({
   id: '/cities/',
   path: '/cities/',
@@ -108,6 +111,17 @@ const ProtectedCouponsNewRoute = ProtectedCouponsNewRouteImport.update({
   path: '/coupons/new',
   getParentRoute: () => ProtectedRoute,
 } as any)
+const ProtectedCustomersIndexRoute = ProtectedCustomersIndexRouteImport.update({
+  id: '/customers/',
+  path: '/customers/',
+  getParentRoute: () => ProtectedRoute,
+} as any)
+const ProtectedCustomersCustomerIdRoute =
+  ProtectedCustomersCustomerIdRouteImport.update({
+    id: '/customers/$customerId',
+    path: '/customers/$customerId',
+    getParentRoute: () => ProtectedRoute,
+  } as any)
 const ProtectedMoviesIndexRoute = ProtectedMoviesIndexRouteImport.update({
   id: '/movies/',
   path: '/movies/',
@@ -193,23 +207,25 @@ const ProtectedVenuesVenueIdScreensScreenIdEditRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/bookings': typeof ProtectedBookingsRoute
-  '/customers': typeof ProtectedCustomersRoute
   '/dashboard': typeof ProtectedDashboardRoute
   '/payments': typeof ProtectedPaymentsRoute
   '/login': typeof PublicLoginRoute
+  '/bookings/$bookingId': typeof ProtectedBookingsBookingIdRoute
   '/cities/$cityId': typeof ProtectedCitiesCityIdRoute
   '/cities/new': typeof ProtectedCitiesNewRoute
   '/coupons/$couponId': typeof ProtectedCouponsCouponIdRoute
   '/coupons/new': typeof ProtectedCouponsNewRoute
+  '/customers/$customerId': typeof ProtectedCustomersCustomerIdRoute
   '/movies/$movieId': typeof ProtectedMoviesMovieIdRoute
   '/movies/new': typeof ProtectedMoviesNewRoute
   '/showtimes/$showId': typeof ProtectedShowtimesShowIdRoute
   '/showtimes/new': typeof ProtectedShowtimesNewRoute
   '/venues/$venueId': typeof ProtectedVenuesVenueIdRoute
   '/venues/new': typeof ProtectedVenuesNewRoute
+  '/bookings/': typeof ProtectedBookingsIndexRoute
   '/cities/': typeof ProtectedCitiesIndexRoute
   '/coupons/': typeof ProtectedCouponsIndexRoute
+  '/customers/': typeof ProtectedCustomersIndexRoute
   '/movies/': typeof ProtectedMoviesIndexRoute
   '/showtimes/': typeof ProtectedShowtimesIndexRoute
   '/venues/': typeof ProtectedVenuesIndexRoute
@@ -222,23 +238,25 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/bookings': typeof ProtectedBookingsRoute
-  '/customers': typeof ProtectedCustomersRoute
   '/dashboard': typeof ProtectedDashboardRoute
   '/payments': typeof ProtectedPaymentsRoute
   '/login': typeof PublicLoginRoute
+  '/bookings/$bookingId': typeof ProtectedBookingsBookingIdRoute
   '/cities/$cityId': typeof ProtectedCitiesCityIdRoute
   '/cities/new': typeof ProtectedCitiesNewRoute
   '/coupons/$couponId': typeof ProtectedCouponsCouponIdRoute
   '/coupons/new': typeof ProtectedCouponsNewRoute
+  '/customers/$customerId': typeof ProtectedCustomersCustomerIdRoute
   '/movies/$movieId': typeof ProtectedMoviesMovieIdRoute
   '/movies/new': typeof ProtectedMoviesNewRoute
   '/showtimes/$showId': typeof ProtectedShowtimesShowIdRoute
   '/showtimes/new': typeof ProtectedShowtimesNewRoute
   '/venues/$venueId': typeof ProtectedVenuesVenueIdRoute
   '/venues/new': typeof ProtectedVenuesNewRoute
+  '/bookings': typeof ProtectedBookingsIndexRoute
   '/cities': typeof ProtectedCitiesIndexRoute
   '/coupons': typeof ProtectedCouponsIndexRoute
+  '/customers': typeof ProtectedCustomersIndexRoute
   '/movies': typeof ProtectedMoviesIndexRoute
   '/showtimes': typeof ProtectedShowtimesIndexRoute
   '/venues': typeof ProtectedVenuesIndexRoute
@@ -254,23 +272,25 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_protected': typeof ProtectedRouteWithChildren
   '/_public': typeof PublicRouteWithChildren
-  '/_protected/bookings': typeof ProtectedBookingsRoute
-  '/_protected/customers': typeof ProtectedCustomersRoute
   '/_protected/dashboard': typeof ProtectedDashboardRoute
   '/_protected/payments': typeof ProtectedPaymentsRoute
   '/_public/login': typeof PublicLoginRoute
+  '/_protected/bookings/$bookingId': typeof ProtectedBookingsBookingIdRoute
   '/_protected/cities/$cityId': typeof ProtectedCitiesCityIdRoute
   '/_protected/cities/new': typeof ProtectedCitiesNewRoute
   '/_protected/coupons/$couponId': typeof ProtectedCouponsCouponIdRoute
   '/_protected/coupons/new': typeof ProtectedCouponsNewRoute
+  '/_protected/customers/$customerId': typeof ProtectedCustomersCustomerIdRoute
   '/_protected/movies/$movieId': typeof ProtectedMoviesMovieIdRoute
   '/_protected/movies/new': typeof ProtectedMoviesNewRoute
   '/_protected/showtimes/$showId': typeof ProtectedShowtimesShowIdRoute
   '/_protected/showtimes/new': typeof ProtectedShowtimesNewRoute
   '/_protected/venues/$venueId': typeof ProtectedVenuesVenueIdRoute
   '/_protected/venues/new': typeof ProtectedVenuesNewRoute
+  '/_protected/bookings/': typeof ProtectedBookingsIndexRoute
   '/_protected/cities/': typeof ProtectedCitiesIndexRoute
   '/_protected/coupons/': typeof ProtectedCouponsIndexRoute
+  '/_protected/customers/': typeof ProtectedCustomersIndexRoute
   '/_protected/movies/': typeof ProtectedMoviesIndexRoute
   '/_protected/showtimes/': typeof ProtectedShowtimesIndexRoute
   '/_protected/venues/': typeof ProtectedVenuesIndexRoute
@@ -285,23 +305,25 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/bookings'
-    | '/customers'
     | '/dashboard'
     | '/payments'
     | '/login'
+    | '/bookings/$bookingId'
     | '/cities/$cityId'
     | '/cities/new'
     | '/coupons/$couponId'
     | '/coupons/new'
+    | '/customers/$customerId'
     | '/movies/$movieId'
     | '/movies/new'
     | '/showtimes/$showId'
     | '/showtimes/new'
     | '/venues/$venueId'
     | '/venues/new'
+    | '/bookings/'
     | '/cities/'
     | '/coupons/'
+    | '/customers/'
     | '/movies/'
     | '/showtimes/'
     | '/venues/'
@@ -314,23 +336,25 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/bookings'
-    | '/customers'
     | '/dashboard'
     | '/payments'
     | '/login'
+    | '/bookings/$bookingId'
     | '/cities/$cityId'
     | '/cities/new'
     | '/coupons/$couponId'
     | '/coupons/new'
+    | '/customers/$customerId'
     | '/movies/$movieId'
     | '/movies/new'
     | '/showtimes/$showId'
     | '/showtimes/new'
     | '/venues/$venueId'
     | '/venues/new'
+    | '/bookings'
     | '/cities'
     | '/coupons'
+    | '/customers'
     | '/movies'
     | '/showtimes'
     | '/venues'
@@ -345,23 +369,25 @@ export interface FileRouteTypes {
     | '/'
     | '/_protected'
     | '/_public'
-    | '/_protected/bookings'
-    | '/_protected/customers'
     | '/_protected/dashboard'
     | '/_protected/payments'
     | '/_public/login'
+    | '/_protected/bookings/$bookingId'
     | '/_protected/cities/$cityId'
     | '/_protected/cities/new'
     | '/_protected/coupons/$couponId'
     | '/_protected/coupons/new'
+    | '/_protected/customers/$customerId'
     | '/_protected/movies/$movieId'
     | '/_protected/movies/new'
     | '/_protected/showtimes/$showId'
     | '/_protected/showtimes/new'
     | '/_protected/venues/$venueId'
     | '/_protected/venues/new'
+    | '/_protected/bookings/'
     | '/_protected/cities/'
     | '/_protected/coupons/'
+    | '/_protected/customers/'
     | '/_protected/movies/'
     | '/_protected/showtimes/'
     | '/_protected/venues/'
@@ -402,20 +428,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_protected/bookings': {
-      id: '/_protected/bookings'
-      path: '/bookings'
-      fullPath: '/bookings'
-      preLoaderRoute: typeof ProtectedBookingsRouteImport
-      parentRoute: typeof ProtectedRoute
-    }
-    '/_protected/customers': {
-      id: '/_protected/customers'
-      path: '/customers'
-      fullPath: '/customers'
-      preLoaderRoute: typeof ProtectedCustomersRouteImport
-      parentRoute: typeof ProtectedRoute
-    }
     '/_protected/dashboard': {
       id: '/_protected/dashboard'
       path: '/dashboard'
@@ -436,6 +448,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/login'
       preLoaderRoute: typeof PublicLoginRouteImport
       parentRoute: typeof PublicRoute
+    }
+    '/_protected/bookings/': {
+      id: '/_protected/bookings/'
+      path: '/bookings'
+      fullPath: '/bookings/'
+      preLoaderRoute: typeof ProtectedBookingsIndexRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/bookings/$bookingId': {
+      id: '/_protected/bookings/$bookingId'
+      path: '/bookings/$bookingId'
+      fullPath: '/bookings/$bookingId'
+      preLoaderRoute: typeof ProtectedBookingsBookingIdRouteImport
+      parentRoute: typeof ProtectedRoute
     }
     '/_protected/cities/': {
       id: '/_protected/cities/'
@@ -477,6 +503,20 @@ declare module '@tanstack/react-router' {
       path: '/coupons/new'
       fullPath: '/coupons/new'
       preLoaderRoute: typeof ProtectedCouponsNewRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/customers/': {
+      id: '/_protected/customers/'
+      path: '/customers'
+      fullPath: '/customers/'
+      preLoaderRoute: typeof ProtectedCustomersIndexRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/customers/$customerId': {
+      id: '/_protected/customers/$customerId'
+      path: '/customers/$customerId'
+      fullPath: '/customers/$customerId'
+      preLoaderRoute: typeof ProtectedCustomersCustomerIdRouteImport
       parentRoute: typeof ProtectedRoute
     }
     '/_protected/movies/': {
@@ -588,22 +628,24 @@ declare module '@tanstack/react-router' {
 }
 
 interface ProtectedRouteChildren {
-  ProtectedBookingsRoute: typeof ProtectedBookingsRoute
-  ProtectedCustomersRoute: typeof ProtectedCustomersRoute
   ProtectedDashboardRoute: typeof ProtectedDashboardRoute
   ProtectedPaymentsRoute: typeof ProtectedPaymentsRoute
+  ProtectedBookingsBookingIdRoute: typeof ProtectedBookingsBookingIdRoute
   ProtectedCitiesCityIdRoute: typeof ProtectedCitiesCityIdRoute
   ProtectedCitiesNewRoute: typeof ProtectedCitiesNewRoute
   ProtectedCouponsCouponIdRoute: typeof ProtectedCouponsCouponIdRoute
   ProtectedCouponsNewRoute: typeof ProtectedCouponsNewRoute
+  ProtectedCustomersCustomerIdRoute: typeof ProtectedCustomersCustomerIdRoute
   ProtectedMoviesMovieIdRoute: typeof ProtectedMoviesMovieIdRoute
   ProtectedMoviesNewRoute: typeof ProtectedMoviesNewRoute
   ProtectedShowtimesShowIdRoute: typeof ProtectedShowtimesShowIdRoute
   ProtectedShowtimesNewRoute: typeof ProtectedShowtimesNewRoute
   ProtectedVenuesVenueIdRoute: typeof ProtectedVenuesVenueIdRoute
   ProtectedVenuesNewRoute: typeof ProtectedVenuesNewRoute
+  ProtectedBookingsIndexRoute: typeof ProtectedBookingsIndexRoute
   ProtectedCitiesIndexRoute: typeof ProtectedCitiesIndexRoute
   ProtectedCouponsIndexRoute: typeof ProtectedCouponsIndexRoute
+  ProtectedCustomersIndexRoute: typeof ProtectedCustomersIndexRoute
   ProtectedMoviesIndexRoute: typeof ProtectedMoviesIndexRoute
   ProtectedShowtimesIndexRoute: typeof ProtectedShowtimesIndexRoute
   ProtectedVenuesIndexRoute: typeof ProtectedVenuesIndexRoute
@@ -616,22 +658,24 @@ interface ProtectedRouteChildren {
 }
 
 const ProtectedRouteChildren: ProtectedRouteChildren = {
-  ProtectedBookingsRoute: ProtectedBookingsRoute,
-  ProtectedCustomersRoute: ProtectedCustomersRoute,
   ProtectedDashboardRoute: ProtectedDashboardRoute,
   ProtectedPaymentsRoute: ProtectedPaymentsRoute,
+  ProtectedBookingsBookingIdRoute: ProtectedBookingsBookingIdRoute,
   ProtectedCitiesCityIdRoute: ProtectedCitiesCityIdRoute,
   ProtectedCitiesNewRoute: ProtectedCitiesNewRoute,
   ProtectedCouponsCouponIdRoute: ProtectedCouponsCouponIdRoute,
   ProtectedCouponsNewRoute: ProtectedCouponsNewRoute,
+  ProtectedCustomersCustomerIdRoute: ProtectedCustomersCustomerIdRoute,
   ProtectedMoviesMovieIdRoute: ProtectedMoviesMovieIdRoute,
   ProtectedMoviesNewRoute: ProtectedMoviesNewRoute,
   ProtectedShowtimesShowIdRoute: ProtectedShowtimesShowIdRoute,
   ProtectedShowtimesNewRoute: ProtectedShowtimesNewRoute,
   ProtectedVenuesVenueIdRoute: ProtectedVenuesVenueIdRoute,
   ProtectedVenuesNewRoute: ProtectedVenuesNewRoute,
+  ProtectedBookingsIndexRoute: ProtectedBookingsIndexRoute,
   ProtectedCitiesIndexRoute: ProtectedCitiesIndexRoute,
   ProtectedCouponsIndexRoute: ProtectedCouponsIndexRoute,
+  ProtectedCustomersIndexRoute: ProtectedCustomersIndexRoute,
   ProtectedMoviesIndexRoute: ProtectedMoviesIndexRoute,
   ProtectedShowtimesIndexRoute: ProtectedShowtimesIndexRoute,
   ProtectedVenuesIndexRoute: ProtectedVenuesIndexRoute,

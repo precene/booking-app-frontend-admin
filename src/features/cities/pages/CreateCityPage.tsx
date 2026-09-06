@@ -55,7 +55,7 @@ export default function CreateCityPage() {
       toast.success({ title: "City Created." });
       void navigate({ to: "/cities" });
     } catch (error) {
-      setFormError(getApiErrorMessage(error, "Unable To Create City."));
+      setFormError(getApiErrorMessage(error, "Unable to create city."));
     } finally {
       setIsSubmitting(false);
     }
@@ -72,7 +72,7 @@ export default function CreateCityPage() {
 
       <CityForm
         cityForm={cityForm}
-        description="Create A Service City With Routing And Availability Settings."
+        description="Create a service city with routing and availability settings."
         errors={errors}
         formId={formId}
         isSubmitting={isSubmitting}

@@ -44,7 +44,3 @@ export interface ListMoviesQuery {
   limit?: number;
   q?: string;
 }
-
-export type SetVenueMoviesPayload = {
-  movieIds: Array<string>;
-};

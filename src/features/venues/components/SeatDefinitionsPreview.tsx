@@ -1,4 +1,7 @@
+import { Armchair } from "lucide-react";
+
 import type { SeatDefinition } from "../types/seatLayoutTypes";
+import { getRowLabel, getSeatKey } from "../utils/seatLayoutUtils";
 
 type SeatDefinitionsPreviewProps = {
   seats: Array<SeatDefinition>;
@@ -14,38 +17,53 @@ export function SeatDefinitionsPreview({ seats }: SeatDefinitionsPreviewProps) {
   }
 
   const columns = Math.max(...seats.map((seat) => seat.positionX));
-  const sortedSeats = [...seats].sort((firstSeat, secondSeat) => {
-    if (firstSeat.positionY !== secondSeat.positionY) {
-      return firstSeat.positionY - secondSeat.positionY;
-    }
-
-    return firstSeat.positionX - secondSeat.positionX;
-  });
+  const rows = Math.max(...seats.map((seat) => seat.positionY));
+  const seatByPosition = new Map(
+    seats.map((seat) => [getSeatKey(seat.positionX, seat.positionY), seat]),
+  );
 
   return (
     <div className="bg-surface-muted overflow-x-auto rounded-md border p-4">
+      <p className="text-muted mb-2 text-center text-xs font-semibold uppercase">Screen</p>
       <div className="bg-foreground/80 mx-auto mb-4 h-2 w-48 rounded-full" />
 
       <div
         className="mx-auto grid w-max gap-2"
-        style={{ gridTemplateColumns: `repeat(${columns}, minmax(1.75rem, 1.75rem))` }}
+        style={{ gridTemplateColumns: `2rem repeat(${columns}, minmax(1.75rem, 1.75rem))` }}
       >
-        {sortedSeats.map((seat) => (
-          <div
-            className={
-              seat.isActive
-                ? "border-primary/30 bg-primary/10 text-primary flex size-7 items-center justify-center rounded text-[0.625rem] font-semibold"
-                : "border-border bg-surface text-muted flex size-7 items-center justify-center rounded text-[0.625rem] font-semibold opacity-60"
-            }
-            key={seat.id}
-            title={seat.seatLabel}
-          >
-            {seat.seatLabel}
-          </div>
-        ))}
-      </div>
+        {Array.from({ length: rows }).flatMap((_row, rowIndex) => {
+          const positionY = rowIndex + 1;
 
-      <p className="text-muted mt-4 text-center text-xs font-medium">Screen</p>
+          return [
+            <div
+              className="text-muted flex size-7 items-center justify-center text-xs font-semibold"
+              key={`row-${positionY}`}
+            >
+              {getRowLabel(rowIndex)}
+            </div>,
+            ...Array.from({ length: columns }).map((_column, columnIndex) => {
+              const positionX = columnIndex + 1;
+              const seat = seatByPosition.get(getSeatKey(positionX, positionY));
+
+              return (
+                <div
+                  className={
+                    !seat
+                      ? "border-border bg-surface text-muted flex size-7 items-center justify-center rounded border text-[0.625rem] font-semibold"
+                      : seat.isActive
+                        ? "flex size-7 items-center justify-center rounded border border-teal-200 bg-teal-50 text-[0.625rem] font-semibold text-teal-700"
+                        : "flex size-7 items-center justify-center rounded border border-amber-300 bg-amber-100 text-[0.625rem] font-semibold text-amber-800"
+                  }
+                  key={getSeatKey(positionX, positionY)}
+                  title={seat?.seatLabel ?? "Gap"}
+                >
+                  {seat ? <Armchair aria-hidden="true" className="size-4" /> : null}
+                </div>
+              );
+            }),
+          ];
+        })}
+      </div>
     </div>
   );
 }

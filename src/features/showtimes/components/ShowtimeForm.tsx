@@ -1,16 +1,33 @@
 import { DateTime } from "luxon";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, CalendarClock, Clock, Film, MapPin, Save } from "lucide-react";
-import type { SubmitEvent } from "react";
+import {
+  ArrowLeft,
+  CalendarClock,
+  Check,
+  ChevronsUpDown,
+  Clock,
+  Film,
+  MapPin,
+  Save,
+} from "lucide-react";
+import { useState, type SubmitEvent } from "react";
 
 import type { Movie } from "#/features/movies/types/movieTypes";
 import type { Screen } from "#/features/venues/types/screenTypes";
 import type { Venue } from "#/features/venues/types/venueTypes";
 import { Button } from "#/shared/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "#/shared/components/ui/command";
 import { DatePicker } from "#/shared/components/ui/date-picker";
 import { Form } from "#/shared/components/ui/form";
 import { Input } from "#/shared/components/ui/input";
 import { Label } from "#/shared/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "#/shared/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -18,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "#/shared/components/ui/select";
+import { cn } from "#/shared/utils/cn";
 import type { FormValidationErrors } from "#/shared/utils/getFormValidationErrors";
 import type { ShowtimePayload } from "../types/showtimeTypes";
 import { combineShowtimeDateTime, formatShowtimeDateTime } from "../utils/showtimeFormatters";
@@ -40,13 +58,16 @@ type ShowtimeFormProps = {
   isScreensLoading: boolean;
   isSubmitting: boolean;
   isVenuesLoading: boolean;
+  movieSearch: string;
   movies: Array<Movie>;
   onSubmit: (event: SubmitEvent<HTMLFormElement>) => void;
+  onUpdateMovieSearch: (value: string) => void;
   onUpdateField: <TField extends keyof ShowtimeFormValues>(
     field: TField,
     value: ShowtimeFormValues[TField],
   ) => void;
   screens: Array<Screen>;
+  selectedMovie: Movie | null;
   submitLabel: string;
   submittingLabel: string;
   title: string;
@@ -70,10 +91,13 @@ export function ShowtimeForm({
   isScreensLoading,
   isSubmitting,
   isVenuesLoading,
+  movieSearch,
   movies,
   onSubmit,
+  onUpdateMovieSearch,
   onUpdateField,
   screens,
+  selectedMovie,
   submitLabel,
   submittingLabel,
   title,
@@ -81,7 +105,6 @@ export function ShowtimeForm({
   showtimeForm,
 }: ShowtimeFormProps) {
   const selectedVenue = venues.find((venue) => venue.id === showtimeForm.venueId);
-  const selectedMovie = movies.find((movie) => movie.id === showtimeForm.movieId);
   const startsAtPreview = selectedVenue
     ? combineShowtimeDateTime(showtimeForm.date, showtimeForm.time, selectedVenue.timezone)
     : null;
@@ -206,29 +229,16 @@ export function ShowtimeForm({
 
             <div className="space-y-2">
               <Label htmlFor="movieId">Movie</Label>
-              <Select
-                disabled={!showtimeForm.venueId || isMoviesLoading}
-                name="movieId"
+              <MovieSearchCombobox
+                error={errors.movieId}
+                isLoading={isMoviesLoading}
+                movies={movies}
+                onSearchChange={onUpdateMovieSearch}
                 onValueChange={(value) => onUpdateField("movieId", value)}
+                search={movieSearch}
+                selectedMovie={selectedMovie}
                 value={showtimeForm.movieId}
-              >
-                <SelectTrigger
-                  aria-describedby={errors.movieId ? "movie-id-error" : undefined}
-                  aria-invalid={Boolean(errors.movieId)}
-                  id="movieId"
-                >
-                  <SelectValue
-                    placeholder={isMoviesLoading ? "Loading movies..." : "Select movie"}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {movies.map((movie) => (
-                    <SelectItem key={movie.id} value={movie.id}>
-                      {movie.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
 
               {errors.movieId ? (
                 <p className="text-destructive text-sm" id="movie-id-error">
@@ -329,4 +339,81 @@ export function getShowtimePayload(formValues: ShowtimeFormValues, venue: Venue)
     screenId: formValues.screenId,
     startsAt: combineShowtimeDateTime(formValues.date, formValues.time, venue.timezone) ?? "",
   };
+}
+
+type MovieSearchComboboxProps = {
+  error?: string;
+  isLoading: boolean;
+  movies: Array<Movie>;
+  onSearchChange: (value: string) => void;
+  onValueChange: (value: string) => void;
+  search: string;
+  selectedMovie: Movie | null;
+  value: string;
+};
+
+function MovieSearchCombobox({
+  error,
+  isLoading,
+  movies,
+  onSearchChange,
+  onValueChange,
+  search,
+  selectedMovie,
+  value,
+}: MovieSearchComboboxProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  function handleSelect(movieId: string) {
+    onValueChange(movieId);
+    onSearchChange("");
+    setIsOpen(false);
+  }
+
+  return (
+    <Popover onOpenChange={setIsOpen} open={isOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          aria-describedby={error ? "movie-id-error" : undefined}
+          aria-expanded={isOpen}
+          aria-invalid={Boolean(error)}
+          className={cn(
+            "w-full justify-between font-normal",
+            !selectedMovie && "text-muted",
+            error && "border-destructive",
+          )}
+          id="movieId"
+          role="combobox"
+          type="button"
+          variant="outline"
+        >
+          <span className="truncate">{selectedMovie?.title ?? "Select Movie"}</span>
+          <ChevronsUpDown className="text-muted size-4 shrink-0" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] p-0">
+        <Command filter={() => 1} shouldFilter={false}>
+          <CommandInput
+            onValueChange={onSearchChange}
+            placeholder="Search Movies..."
+            value={search}
+          />
+          <CommandList>
+            <CommandEmpty>
+              {isLoading ? "Loading Movies..." : "No Active Movies Found."}
+            </CommandEmpty>
+            {movies.map((movie) => (
+              <CommandItem key={movie.id} onSelect={() => handleSelect(movie.id)} value={movie.id}>
+                <Check className={cn("size-4", value === movie.id ? "opacity-100" : "opacity-0")} />
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{movie.title}</p>
+                  <p className="text-muted text-xs">{movie.durationMinutes} Minutes</p>
+                </div>
+              </CommandItem>
+            ))}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
 }

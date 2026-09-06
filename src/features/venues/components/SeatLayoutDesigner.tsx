@@ -1,4 +1,4 @@
-import { Eraser, Grid2X2, MousePointer2 } from "lucide-react";
+import { Armchair, Eraser, Grid2X2, MousePointer2 } from "lucide-react";
 
 import { Button } from "#/shared/components/ui/button";
 import { Input } from "#/shared/components/ui/input";
@@ -8,6 +8,7 @@ import type { SeatLayoutCell, SeatLayoutCellStatus } from "../types/seatLayoutTy
 import {
   createSeatLayoutCells,
   getRowLabel,
+  getSeatLabel,
   getSeatCount,
   getSeatKey,
 } from "../utils/seatLayoutUtils";
@@ -22,7 +23,7 @@ type SeatLayoutDesignerProps = {
   seats: Array<SeatLayoutCell>;
 };
 
-const cellStatuses: Array<SeatLayoutCellStatus | "empty"> = ["empty", "seat", "disabled"];
+const cellStatuses: Array<SeatLayoutCellStatus | "empty"> = ["seat", "empty", "disabled"];
 
 export function SeatLayoutDesigner({
   columns,
@@ -123,7 +124,7 @@ export function SeatLayoutDesigner({
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3 text-xs font-medium">
-          <LegendItem className="bg-primary/10 ring-primary/30" label="Seat" />
+          <LegendItem className="bg-teal-50 text-teal-700 ring-teal-200" label="Seat" />
           <LegendItem className="bg-surface text-muted ring-border" label="Gap" />
           <LegendItem className="bg-amber-100 ring-amber-300" label="Disabled" />
         </div>
@@ -174,15 +175,15 @@ export function SeatLayoutDesigner({
                 const positionX = columnIndex + 1;
                 const seat = seatByPosition.get(getSeatKey(positionX, positionY));
                 const status = seat?.status ?? "empty";
-                const label = `${getRowLabel(rowIndex)}${positionX}`;
+                const label = getSeatLabel(seats, positionX, positionY);
 
                 return (
                   <button
-                    aria-label={`${label} ${status}`}
+                    aria-label={`${label || "Gap"} ${status}`}
                     className={cn(
                       "flex size-7 items-center justify-center rounded border text-[0.625rem] font-semibold transition-colors",
                       status === "seat" &&
-                        "border-primary/30 bg-primary/10 text-primary hover:bg-primary/20",
+                        "border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100",
                       status === "disabled" &&
                         "border-amber-300 bg-amber-100 text-amber-800 hover:bg-amber-200",
                       status === "empty" &&
@@ -193,7 +194,7 @@ export function SeatLayoutDesigner({
                     onClick={() => handleCellClick(positionX, positionY)}
                     type="button"
                   >
-                    {status === "empty" ? "" : label}
+                    {status === "empty" ? null : <Armchair aria-hidden="true" className="size-4" />}
                   </button>
                 );
               }),
@@ -203,7 +204,7 @@ export function SeatLayoutDesigner({
 
         <p className="text-muted mt-4 flex items-center justify-center gap-2 text-center text-xs font-medium">
           <MousePointer2 className="size-3" />
-          Click Cells to Cycle Gap, Seat, and Disabled Seat.
+          Click Cells To Cycle Seat, Gap, and Disabled Seat.
         </p>
       </div>
 

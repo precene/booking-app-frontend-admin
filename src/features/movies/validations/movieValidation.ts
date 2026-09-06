@@ -6,12 +6,26 @@ const releaseDateSchema = z
   .trim()
   .superRefine((value, context) => {
     if (!value) {
-      context.addIssue({ code: "custom", message: "Release Date Is Required" });
+      context.addIssue({ code: "custom", message: "Release date is required" });
       return;
     }
 
     if (!isTodayOrFutureDate(value)) {
-      context.addIssue({ code: "custom", message: "Release Date Cannot Be In The Past" });
+      context.addIssue({ code: "custom", message: "Release date cannot be in the past" });
+    }
+  });
+
+const releaseDateUpdateSchema = z
+  .string()
+  .trim()
+  .superRefine((value, context) => {
+    if (!value) {
+      context.addIssue({ code: "custom", message: "Release date is required" });
+      return;
+    }
+
+    if (!DateTime.fromISO(value).isValid) {
+      context.addIssue({ code: "custom", message: "Release date is invalid" });
     }
   });
 
@@ -21,47 +35,51 @@ const urlFieldSchema = (label: string) =>
     .trim()
     .superRefine((value, context) => {
       if (!value) {
-        context.addIssue({ code: "custom", message: `${label} Is Required` });
+        context.addIssue({ code: "custom", message: `${label} is required` });
         return;
       }
 
       if (value.length > 2048) {
         context.addIssue({
           code: "custom",
-          message: `${label} Must Be At Most 2048 Characters`,
+          message: `${label} must be at most 2048 characters`,
         });
         return;
       }
 
       if (!isValidUrl(value)) {
-        context.addIssue({ code: "custom", message: `${label} Must Be A Valid URL` });
+        context.addIssue({ code: "custom", message: `${label} must be a valid URL` });
       }
     });
 
 const creditListSchema = z
-  .array(z.string().trim().min(1, "Credit Name Is Required").max(80, "Credit Name Is Too Long"))
-  .max(30, "At Most 30 Names Are Allowed")
+  .array(z.string().trim().min(1, "Credit name is required").max(80, "Credit name is too long"))
+  .max(30, "At most 30 names are allowed")
   .optional();
 
 export const movieSchema = z.object({
-  title: z.string().trim().min(1, "Title Is Required").max(255, "Title Is Too Long"),
-  overview: z.string().trim().min(1, "Overview Is Required").max(5000, "Overview Is Too Long"),
+  title: z.string().trim().min(1, "Title is required").max(255, "Title is too long"),
+  overview: z.string().trim().min(1, "Overview is required").max(5000, "Overview is too long"),
   posterUrl: urlFieldSchema("Poster URL"),
   coverImage: urlFieldSchema("Cover Image URL"),
   trailerUrl: urlFieldSchema("Trailer URL"),
   durationMinutes: z
     .number()
     .int()
-    .min(1, "Duration Must Be At Least 1 Minute")
-    .max(600, "Duration Must Be At Most 600 Minutes"),
-  ageRating: z.string().trim().min(1, "Age Rating Is Required").max(20, "Age Rating Is Too Long"),
-  genre: z.string().trim().min(1, "Genre Is Required").max(50, "Genre Is Too Long"),
+    .min(1, "Duration must be at least 1 minute")
+    .max(600, "Duration must be at most 600 minutes"),
+  ageRating: z.string().trim().min(1, "Age rating is required").max(20, "Age rating is too long"),
+  genre: z.string().trim().min(1, "Genre is required").max(50, "Genre is too long"),
   directors: creditListSchema,
   producers: creditListSchema,
   writers: creditListSchema,
   cast: creditListSchema,
   releaseDate: releaseDateSchema,
   active: z.boolean().optional(),
+});
+
+export const movieUpdateSchema = movieSchema.extend({
+  releaseDate: releaseDateUpdateSchema,
 });
 
 function isTodayOrFutureDate(value: string) {

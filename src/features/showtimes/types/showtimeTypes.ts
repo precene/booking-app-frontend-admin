@@ -1,5 +1,5 @@
 export type ShowStatus = "cancelled" | "completed" | "live" | "scheduled";
-export type ShowSeatStatus = "available" | "booked" | "held" | "unavailable";
+export type ShowSeatStatus = "available" | "booked" | "cancelled" | "held" | "unavailable";
 
 export type ShowSeatSummary = {
   available: number;
@@ -82,11 +82,17 @@ export type ListShowtimesQuery = {
 };
 
 export type ShowSeat = {
+  blockedReason: null | string;
   categoryId: null | string;
   categoryName: null | string;
   id: string;
+  isAccessible: boolean;
+  isRestricted: boolean;
+  positionX?: number;
+  positionY?: number;
   priceMinor: number;
   rowLabel: string;
+  section: null | string;
   seatLabel: string;
   status: ShowSeatStatus;
 };

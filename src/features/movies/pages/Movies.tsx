@@ -124,7 +124,7 @@ export default function Movies() {
       const response = await moviesApi.list(query);
       setMovies(response.data);
     } catch (error) {
-      setErrorMessage(getApiErrorMessage(error, "Unable To Load Movies."));
+      setErrorMessage(getApiErrorMessage(error, "Unable to load movies."));
     } finally {
       setIsLoading(false);
     }
@@ -175,7 +175,7 @@ export default function Movies() {
         <div>
           <h2 className="text-2xl font-semibold tracking-normal">Movies</h2>
           <p className="text-muted mt-2 text-sm">
-            Manage Movie Listings, Posters, Metadata, Release Details, And Catalog Availability.
+            Manage movie listings, posters, metadata, release details, and catalog availability.
           </p>
         </div>
 
@@ -239,8 +239,8 @@ export default function Movies() {
       <DataTable
         columns={columns}
         data={movies.items}
-        emptyMessage={isLoading ? "Loading Movies..." : "No Movies Found."}
-        loadingMessage="Loading Movies..."
+        emptyMessage={isLoading ? "Loading movies..." : "No movies found."}
+        loadingMessage="Loading movies..."
         pagination={{
           isLoading,
           limit: movies.limit,

@@ -35,6 +35,7 @@ export type MovieFormErrors = FormValidationErrors<MoviePayload>;
 
 type MovieFormProps = {
   description: string;
+  disablePastReleaseDate?: boolean;
   errors: MovieFormErrors;
   formId: string;
   isSubmitting: boolean;
@@ -68,6 +69,7 @@ export const initialMovieFormValues: MovieFormValues = {
 
 export function MovieForm({
   description,
+  disablePastReleaseDate = true,
   errors,
   formId,
   isSubmitting,
@@ -199,7 +201,7 @@ export function MovieForm({
                 <DatePicker
                   aria-describedby={errors.releaseDate ? "release-date-error" : undefined}
                   aria-invalid={Boolean(errors.releaseDate)}
-                  disablePast
+                  disablePast={disablePastReleaseDate}
                   id="releaseDate"
                   name="releaseDate"
                   onValueChange={(value) => onUpdateField("releaseDate", value)}
@@ -362,7 +364,7 @@ export function MovieForm({
                 <img alt="" className="size-full object-cover" src={movieForm.posterUrl} />
               ) : (
                 <div className="text-muted flex size-full items-center justify-center px-6 text-center text-sm font-medium">
-                  Poster Preview Appears Here
+                  Poster preview appears here.
                 </div>
               )}
             </div>
@@ -381,7 +383,7 @@ export function MovieForm({
               <span>
                 <span className="block text-sm font-medium">Active In Catalog</span>
                 <span className="text-muted mt-1 block text-sm">
-                  Active Movies Can Be Used For Show Scheduling And Customer Browsing.
+                  Active movies can be used for show scheduling and customer browsing.
                 </span>
               </span>
             </label>
