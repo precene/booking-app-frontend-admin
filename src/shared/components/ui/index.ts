@@ -1,6 +1,7 @@
 export * from "./alert";
 export * from "./button";
 export * from "./checkbox";
+export * from "./command";
 export * from "./data-table";
 export * from "./date-picker";
 export * from "./dialog";

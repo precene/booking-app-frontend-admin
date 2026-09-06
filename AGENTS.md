@@ -5,6 +5,7 @@
 - Highest-priority rule: never edit, patch, format, or otherwise modify the backend. Inspect `C:\Users\Pratik\Documents\Backend\booking-app-backend\src` only as a read-only API/database contract.
 - Work only inside `booking-admin`. Do not inspect or modify `booking-customer` unless explicitly asked.
 - Never start the dev server on your own. Run `pnpm dev` or any equivalent local server only when the user explicitly asks.
+- Never install dependencies or libraries on your own. If a dependency is needed, name the package and let the user install it manually.
 - This admin app manages movies, cities, venues, seating layouts, showtimes, bookings, customers, payments, coupons, admin users, and related dashboard workflows.
 
 ## Structure
