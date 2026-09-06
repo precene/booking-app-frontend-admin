@@ -226,7 +226,7 @@ export default function VenuesPage() {
         onSubmit={handleSearch}
       >
         <div>
-          <Label htmlFor="venue-search">Search venues</Label>
+          <Label htmlFor="venue-search">Search Venues</Label>
 
           <div className="relative">
             <Search className="text-muted pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
@@ -236,7 +236,7 @@ export default function VenuesPage() {
               id="venue-search"
               maxLength={100}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Name or address"
+              placeholder="Name or Address"
               type="search"
               value={search}
             />
@@ -247,10 +247,10 @@ export default function VenuesPage() {
           <Label htmlFor="venue-city">City</Label>
           <Select disabled={isLoading || isCitiesLoading} onValueChange={setCityId} value={cityId}>
             <SelectTrigger id="venue-city">
-              <SelectValue placeholder="All cities" />
+              <SelectValue placeholder="All Cities" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={allCitiesValue}>All cities</SelectItem>
+              <SelectItem value={allCitiesValue}>All Cities</SelectItem>
               {cities.map((city) => (
                 <SelectItem key={city.id} value={city.id}>
                   {city.name}
@@ -298,8 +298,8 @@ export default function VenuesPage() {
       <DataTable
         columns={columns}
         data={venues.items}
-        emptyMessage={isLoading ? "Loading venues..." : "No venues found."}
-        loadingMessage="Loading venues..."
+        emptyMessage={isLoading ? "Loading Venues..." : "No venues found."}
+        loadingMessage="Loading Venues..."
         pagination={{
           isLoading,
           limit: venues.limit,

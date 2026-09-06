@@ -29,7 +29,7 @@ export function SeatDefinitionsPreview({ seats }: SeatDefinitionsPreviewProps) {
 
       <div
         className="mx-auto grid w-max gap-2"
-        style={{ gridTemplateColumns: `2rem repeat(${columns}, minmax(1.75rem, 1.75rem))` }}
+        style={{ gridTemplateColumns: `2rem repeat(${columns}, minmax(2.25rem, 2.25rem))` }}
       >
         {Array.from({ length: rows }).flatMap((_row, rowIndex) => {
           const positionY = rowIndex + 1;
@@ -49,15 +49,20 @@ export function SeatDefinitionsPreview({ seats }: SeatDefinitionsPreviewProps) {
                 <div
                   className={
                     !seat
-                      ? "border-border bg-surface text-muted flex size-7 items-center justify-center rounded border text-[0.625rem] font-semibold"
+                      ? "border-border bg-surface text-muted flex size-9 items-center justify-center rounded border text-[0.625rem] font-semibold"
                       : seat.isActive
-                        ? "flex size-7 items-center justify-center rounded border border-teal-200 bg-teal-50 text-[0.625rem] font-semibold text-teal-700"
-                        : "flex size-7 items-center justify-center rounded border border-amber-300 bg-amber-100 text-[0.625rem] font-semibold text-amber-800"
+                        ? "flex size-9 flex-col items-center justify-center rounded border border-teal-200 bg-teal-50 text-[0.625rem] font-semibold leading-none text-teal-700"
+                        : "flex size-9 flex-col items-center justify-center rounded border border-amber-300 bg-amber-100 text-[0.625rem] font-semibold leading-none text-amber-800"
                   }
                   key={getSeatKey(positionX, positionY)}
                   title={seat?.seatLabel ?? "Gap"}
                 >
-                  {seat ? <Armchair aria-hidden="true" className="size-4" /> : null}
+                  {seat ? (
+                    <>
+                      <Armchair aria-hidden="true" className="size-4" />
+                      <span>{seat.seatLabel}</span>
+                    </>
+                  ) : null}
                 </div>
               );
             }),

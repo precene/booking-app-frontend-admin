@@ -1,11 +1,6 @@
 import type { Query } from "#/shared/types";
 
-export type PaymentStatus =
-  | "pending"
-  | "succeeded"
-  | "failed"
-  | "refunded"
-  | "partially_refunded";
+export type PaymentStatus = "pending" | "succeeded" | "failed" | "refunded" | "partially_refunded";
 
 export type AdminPayment = {
   id: string;

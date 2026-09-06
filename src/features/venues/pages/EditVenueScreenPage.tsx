@@ -13,8 +13,10 @@ import {
   type ScreenSeatFormErrors,
   type ScreenSeatFormValues,
 } from "../components/ScreenSeatForm";
+import { seatCategoriesApi } from "../services/seatCategoriesApi";
 import { screensApi } from "../services/screensApi";
 import { seatLayoutsApi } from "../services/seatLayoutsApi";
+import type { SeatCategory } from "../types/seatCategoryTypes";
 import type { SeatLayout } from "../types/seatLayoutTypes";
 import { getSeatDefinitions, getSeatLayoutConfig } from "../utils/seatLayoutUtils";
 import { venueScreenSetupSchema } from "../validations/venueValidation";
@@ -26,9 +28,12 @@ export default function EditVenueScreenPage() {
     from: "/_protected/venues/$venueId_/screens/$screenId_/edit",
   });
   const [formValues, setFormValues] = useState<ScreenSeatFormValues>(initialScreenSeatFormValues);
+  const [categories, setCategories] = useState<Array<SeatCategory>>([]);
   const [layout, setLayout] = useState<SeatLayout | null>(null);
   const [errors, setErrors] = useState<ScreenSeatFormErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
+  const [categoriesErrorMessage, setCategoriesErrorMessage] = useState<string | null>(null);
+  const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -36,7 +41,22 @@ export default function EditVenueScreenPage() {
 
   useEffect(() => {
     void loadScreenSetup();
+    void loadSeatCategories();
   }, [screenId]);
+
+  async function loadSeatCategories() {
+    setIsCategoriesLoading(true);
+    setCategoriesErrorMessage(null);
+
+    try {
+      const response = await seatCategoriesApi.list({ limit: 100, page: 1, venueId });
+      setCategories(response.data.items);
+    } catch (error) {
+      setCategoriesErrorMessage(getApiErrorMessage(error, "Unable to load seat categories."));
+    } finally {
+      setIsCategoriesLoading(false);
+    }
+  }
 
   async function loadScreenSetup() {
     setIsLoading(true);
@@ -96,7 +116,7 @@ export default function EditVenueScreenPage() {
         isActive: true,
         name: screenSetup.layoutName.trim(),
         screenId,
-        seatDefs: getSeatDefinitions(screenSetup.seats),
+        seatDefs: getSeatDefinitions(screenSetup.seats, screenSetup.defaultCategoryId),
       };
 
       if (layout) {
@@ -105,7 +125,7 @@ export default function EditVenueScreenPage() {
         await seatLayoutsApi.create(layoutPayload);
       }
 
-      toast.success({ title: "Screen updated." });
+      toast.success({ title: "Screen Updated." });
       void navigate({ params: { venueId }, to: "/venues/$venueId" });
     } catch (error) {
       setFormError(getApiErrorMessage(error, "Unable to update screen and seat layout."));
@@ -129,9 +149,12 @@ export default function EditVenueScreenPage() {
         </div>
       ) : (
         <ScreenSeatForm
+          categories={categories}
+          categoriesErrorMessage={categoriesErrorMessage}
           description="Update screen metadata and its active seat layout."
           errors={errors}
           formId={formId}
+          isCategoriesLoading={isCategoriesLoading}
           isSubmitting={isSubmitting}
           onSubmit={handleSubmit}
           onUpdateField={updateField}

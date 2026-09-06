@@ -32,10 +32,7 @@ function CommandDialog({
   );
 }
 
-function CommandInput({
-  className,
-  ...props
-}: ComponentProps<typeof CommandPrimitive.Input>) {
+function CommandInput({ className, ...props }: ComponentProps<typeof CommandPrimitive.Input>) {
   return (
     <div className="flex items-center border-b px-3">
       <Search className="text-muted mr-2 size-4 shrink-0" />
@@ -53,7 +50,7 @@ function CommandInput({
 function CommandList({ className, ...props }: ComponentProps<typeof CommandPrimitive.List>) {
   return (
     <CommandPrimitive.List
-      className={cn("max-h-72 overflow-y-auto overflow-x-hidden", className)}
+      className={cn("max-h-72 overflow-x-hidden overflow-y-auto", className)}
       {...props}
     />
   );
@@ -72,7 +69,7 @@ function CommandGroup({ className, ...props }: ComponentProps<typeof CommandPrim
   return (
     <CommandPrimitive.Group
       className={cn(
-        "text-foreground overflow-hidden p-1 [&_[cmdk-group-heading]]:text-muted [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium",
+        "text-foreground [&_[cmdk-group-heading]]:text-muted overflow-hidden p-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium",
         className,
       )}
       {...props}
@@ -85,10 +82,7 @@ function CommandSeparator({
   ...props
 }: ComponentProps<typeof CommandPrimitive.Separator>) {
   return (
-    <CommandPrimitive.Separator
-      className={cn("bg-border -mx-1 h-px", className)}
-      {...props}
-    />
+    <CommandPrimitive.Separator className={cn("bg-border -mx-1 h-px", className)} {...props} />
   );
 }
 
@@ -96,7 +90,7 @@ function CommandItem({ className, ...props }: ComponentProps<typeof CommandPrimi
   return (
     <CommandPrimitive.Item
       className={cn(
-        "aria-selected:bg-primary/10 aria-selected:text-primary data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none",
+        "aria-selected:bg-primary/10 aria-selected:text-primary relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50",
         className,
       )}
       {...props}
@@ -106,10 +100,7 @@ function CommandItem({ className, ...props }: ComponentProps<typeof CommandPrimi
 
 function CommandShortcut({ className, ...props }: ComponentProps<"span">) {
   return (
-    <span
-      className={cn("text-muted ml-auto text-xs tracking-normal", className)}
-      {...props}
-    />
+    <span className={cn("text-muted ml-auto text-xs tracking-normal", className)} {...props} />
   );
 }
 

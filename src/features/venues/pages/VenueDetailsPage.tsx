@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type SubmitEvent } from "react";
 import { Link, useParams } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   AlertCircle,
   ArrowLeft,
   Building2,
+  CircleDollarSign,
   LayoutGrid,
   Mail,
   MapPin,
@@ -12,6 +13,9 @@ import {
   Phone,
   Plus,
   RefreshCcw,
+  Save,
+  Trash2,
+  X,
 } from "lucide-react";
 
 import { citiesApi } from "#/features/cities/services/citiesApi";
@@ -19,17 +23,26 @@ import type { City } from "#/features/cities/types/cityTypes";
 import { Alert, AlertDescription } from "#/shared/components/ui/alert";
 import { Button } from "#/shared/components/ui/button";
 import { DataTable } from "#/shared/components/ui/data-table";
+import { Input } from "#/shared/components/ui/input";
+import { Label } from "#/shared/components/ui/label";
+import { toast } from "#/shared/components/ui/toast";
 import { getApiErrorMessage } from "#/shared/utils/getApiErrorMessage";
 import { SeatDefinitionsPreview } from "../components/SeatDefinitionsPreview";
 import { VenueStatusBadge } from "../components/VenueStatusBadge";
+import { seatCategoriesApi } from "../services/seatCategoriesApi";
 import { screensApi } from "../services/screensApi";
 import { seatLayoutsApi } from "../services/seatLayoutsApi";
 import { venuesApi } from "../services/venuesApi";
 import type { Screen } from "../types/screenTypes";
+import type { SeatCategory } from "../types/seatCategoryTypes";
 import type { SeatLayout } from "../types/seatLayoutTypes";
 import type { Venue } from "../types/venueTypes";
 import { getSeatDefinitionsForDisplay } from "../utils/seatLayoutUtils";
-import { formatOptionalVenueValue, formatVenueDate } from "../utils/venueFormatters";
+import {
+  formatOptionalVenueValue,
+  formatVenueDate,
+  formatVenueMoney,
+} from "../utils/venueFormatters";
 
 type VenueInfoItem = {
   label: string;
@@ -45,11 +58,24 @@ export default function VenueDetailsPage() {
   const { venueId } = useParams({ from: "/_protected/venues/$venueId" });
   const [venue, setVenue] = useState<Venue | null>(null);
   const [city, setCity] = useState<City | null>(null);
+  const [categories, setCategories] = useState<Array<SeatCategory>>([]);
+  const [categoryName, setCategoryName] = useState("");
+  const [categoryPrice, setCategoryPrice] = useState("");
+  const [categoryColor, setCategoryColor] = useState("#10b981");
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  const [editCategoryName, setEditCategoryName] = useState("");
+  const [editCategoryPrice, setEditCategoryPrice] = useState("");
+  const [editCategoryColor, setEditCategoryColor] = useState("#10b981");
   const [screens, setScreens] = useState<Array<Screen>>([]);
   const [layoutByScreenId, setLayoutByScreenId] = useState<Map<string, SeatLayout>>(new Map());
   const [isVenueLoading, setIsVenueLoading] = useState(true);
+  const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);
+  const [isCategorySubmitting, setIsCategorySubmitting] = useState(false);
+  const [categoryActionId, setCategoryActionId] = useState<string | null>(null);
   const [isSetupLoading, setIsSetupLoading] = useState(true);
   const [venueErrorMessage, setVenueErrorMessage] = useState<string | null>(null);
+  const [categoriesErrorMessage, setCategoriesErrorMessage] = useState<string | null>(null);
+  const [categoryFormError, setCategoryFormError] = useState<string | null>(null);
   const [setupErrorMessage, setSetupErrorMessage] = useState<string | null>(null);
 
   const venueInfo: Array<VenueInfoItem> = venue
@@ -67,7 +93,7 @@ export default function VenueDetailsPage() {
           value: formatVenueDate(venue.createdAt),
         },
         {
-          label: "Last updated",
+          label: "Last Updated",
           value: formatVenueDate(venue.updatedAt),
         },
       ]
@@ -105,8 +131,8 @@ export default function VenueDetailsPage() {
       },
       {
         accessorKey: "layout.name",
-        header: "Active layout",
-        cell: ({ row }) => row.original.layout?.name ?? "No active layout",
+        header: "Active Layout",
+        cell: ({ row }) => row.original.layout?.name ?? "No Active Layout",
       },
       {
         accessorKey: "layout.seatCount",
@@ -115,7 +141,7 @@ export default function VenueDetailsPage() {
       },
       {
         accessorKey: "screen.sortOrder",
-        header: "Sort order",
+        header: "Sort Order",
         cell: ({ row }) => row.original.screen.sortOrder,
       },
       {
@@ -142,8 +168,149 @@ export default function VenueDetailsPage() {
     [venueId],
   );
 
+  const categoryColumns = useMemo<Array<ColumnDef<SeatCategory>>>(
+    () => [
+      {
+        accessorKey: "name",
+        header: "Category",
+        cell: ({ row }) => {
+          const category = row.original;
+
+          if (editingCategoryId === category.id) {
+            return (
+              <div className="flex min-w-56 items-center gap-2">
+                <Input
+                  disabled={categoryActionId === category.id}
+                  onChange={(event) => setEditCategoryName(event.target.value)}
+                  value={editCategoryName}
+                />
+                <Input
+                  className="h-10 w-12 p-1"
+                  disabled={categoryActionId === category.id}
+                  onChange={(event) => setEditCategoryColor(event.target.value)}
+                  type="color"
+                  value={editCategoryColor}
+                />
+              </div>
+            );
+          }
+
+          return (
+            <div className="flex items-center gap-2">
+              <span
+                className="size-3 rounded-sm border"
+                style={{ backgroundColor: category.color }}
+              />
+              <span className="font-medium">{category.name}</span>
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: "defaultPriceMinor",
+        header: "Default Price",
+        cell: ({ row }) => {
+          const category = row.original;
+
+          if (editingCategoryId === category.id) {
+            return (
+              <Input
+                className="w-28"
+                disabled={categoryActionId === category.id}
+                min={0}
+                onChange={(event) => setEditCategoryPrice(event.target.value)}
+                step="0.01"
+                type="number"
+                value={editCategoryPrice}
+              />
+            );
+          }
+
+          return formatVenueMoney(category.defaultPriceMinor);
+        },
+      },
+      {
+        accessorKey: "venueId",
+        header: "Scope",
+        cell: ({ row }) => (row.original.venueId ? "Venue" : "Global"),
+      },
+      {
+        accessorKey: "usageCount",
+        header: "Usage",
+        cell: ({ row }) => row.original.usageCount,
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => {
+          const category = row.original;
+          const isEditing = editingCategoryId === category.id;
+          const isBusy = categoryActionId === category.id;
+
+          if (!category.venueId) {
+            return <span className="text-muted text-sm">Global Category</span>;
+          }
+
+          if (isEditing) {
+            return (
+              <div className="flex gap-2">
+                <Button
+                  aria-label="Save Category"
+                  disabled={isBusy}
+                  onClick={() => handleUpdateCategory(category)}
+                  size="icon"
+                  type="button"
+                  variant="outline"
+                >
+                  <Save className="size-4" />
+                </Button>
+                <Button
+                  aria-label="Cancel Category Edit"
+                  disabled={isBusy}
+                  onClick={cancelCategoryEdit}
+                  size="icon"
+                  type="button"
+                  variant="ghost"
+                >
+                  <X className="size-4" />
+                </Button>
+              </div>
+            );
+          }
+
+          return (
+            <div className="flex gap-2">
+              <Button
+                aria-label="Edit Category"
+                disabled={isBusy}
+                onClick={() => startCategoryEdit(category)}
+                size="icon"
+                type="button"
+                variant="outline"
+              >
+                <Pencil className="size-4" />
+              </Button>
+              <Button
+                aria-label="Delete Category"
+                disabled={isBusy}
+                onClick={() => handleDeleteCategory(category)}
+                size="icon"
+                type="button"
+                variant="ghost"
+              >
+                <Trash2 className="size-4" />
+              </Button>
+            </div>
+          );
+        },
+      },
+    ],
+    [categoryActionId, editCategoryColor, editCategoryName, editCategoryPrice, editingCategoryId],
+  );
+
   useEffect(() => {
     void loadVenue();
+    void loadSeatCategories();
     void loadVenueSetup();
   }, [venueId]);
 
@@ -211,6 +378,126 @@ export default function VenueDetailsPage() {
     }
   }
 
+  async function loadSeatCategories() {
+    setIsCategoriesLoading(true);
+    setCategoriesErrorMessage(null);
+
+    try {
+      const response = await seatCategoriesApi.list({ limit: 100, page: 1, venueId });
+      setCategories(response.data.items);
+    } catch (error) {
+      setCategoriesErrorMessage(getApiErrorMessage(error, "Unable to load seat categories."));
+      setCategories([]);
+    } finally {
+      setIsCategoriesLoading(false);
+    }
+  }
+
+  async function handleCreateCategory(event: SubmitEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setCategoryFormError(null);
+
+    const trimmedName = categoryName.trim();
+    const price = Number(categoryPrice);
+
+    if (!trimmedName) {
+      setCategoryFormError("Category Name is required.");
+      return;
+    }
+
+    if (!Number.isFinite(price) || price < 0) {
+      setCategoryFormError("Default Price must be zero or more.");
+      return;
+    }
+
+    setIsCategorySubmitting(true);
+
+    try {
+      await seatCategoriesApi.create({
+        color: categoryColor,
+        defaultPriceMinor: Math.round(price * 100),
+        name: trimmedName,
+        venueId,
+      });
+
+      setCategoryName("");
+      setCategoryPrice("");
+      setCategoryColor("#10b981");
+      toast.success({ title: "Seat Category Created." });
+      await loadSeatCategories();
+    } catch (error) {
+      setCategoryFormError(getApiErrorMessage(error, "Unable to create seat category."));
+    } finally {
+      setIsCategorySubmitting(false);
+    }
+  }
+
+  function startCategoryEdit(category: SeatCategory) {
+    setEditingCategoryId(category.id);
+    setEditCategoryName(category.name);
+    setEditCategoryPrice(String(category.defaultPriceMinor / 100));
+    setEditCategoryColor(category.color);
+    setCategoryFormError(null);
+  }
+
+  function cancelCategoryEdit() {
+    setEditingCategoryId(null);
+    setEditCategoryName("");
+    setEditCategoryPrice("");
+    setEditCategoryColor("#10b981");
+  }
+
+  async function handleUpdateCategory(category: SeatCategory) {
+    setCategoryFormError(null);
+
+    const trimmedName = editCategoryName.trim();
+    const price = Number(editCategoryPrice);
+
+    if (!trimmedName) {
+      setCategoryFormError("Category Name is required.");
+      return;
+    }
+
+    if (!Number.isFinite(price) || price < 0) {
+      setCategoryFormError("Default Price must be zero or more.");
+      return;
+    }
+
+    setCategoryActionId(category.id);
+
+    try {
+      await seatCategoriesApi.update(category.id, {
+        color: editCategoryColor,
+        defaultPriceMinor: Math.round(price * 100),
+        name: trimmedName,
+        venueId: category.venueId,
+      });
+
+      cancelCategoryEdit();
+      toast.success({ title: "Seat Category Updated." });
+      await loadSeatCategories();
+    } catch (error) {
+      setCategoryFormError(getApiErrorMessage(error, "Unable to update seat category."));
+    } finally {
+      setCategoryActionId(null);
+    }
+  }
+
+  async function handleDeleteCategory(category: SeatCategory) {
+    setCategoryFormError(null);
+    setCategoryActionId(category.id);
+
+    try {
+      await seatCategoriesApi.delete(category.id);
+      toast.success({ title: "Seat Category Deleted." });
+      await loadSeatCategories();
+    } catch (error) {
+      setCategoryFormError(getApiErrorMessage(error, "Unable to delete seat category."));
+    } finally {
+      setCategoryActionId(null);
+    }
+  }
+
   return (
     <section className="space-y-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -249,7 +536,7 @@ export default function VenueDetailsPage() {
 
       {isVenueLoading ? (
         <div className="bg-surface rounded-lg border p-6 shadow-sm">
-          <p className="text-muted text-sm font-medium">Loading venue details...</p>
+          <p className="text-muted text-sm font-medium">Loading Venue Details...</p>
         </div>
       ) : null}
 
@@ -268,7 +555,7 @@ export default function VenueDetailsPage() {
             <p className="text-muted mt-2 text-sm">{city?.name ?? "Unknown city"}</p>
 
             <div className="mt-5 rounded-md border p-4">
-              <p className="text-muted text-xs font-medium uppercase">Total capacity</p>
+              <p className="text-muted text-xs font-medium uppercase">Total Capacity</p>
               <p className="mt-1 text-3xl font-semibold tracking-normal">{totalCapacity}</p>
               <p className="text-muted mt-1 text-sm">Seats across {screens.length} screens.</p>
             </div>
@@ -362,9 +649,90 @@ export default function VenueDetailsPage() {
         <DataTable
           columns={screenColumns}
           data={screenRows}
-          emptyMessage={isSetupLoading ? "Loading screens..." : "No screens found for this venue."}
-          loadingMessage="Loading screens..."
+          emptyMessage={isSetupLoading ? "Loading Screens..." : "No screens found for this venue."}
+          loadingMessage="Loading Screens..."
           resultLabel="screens"
+        />
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-xl font-semibold tracking-normal">Seat Categories</h3>
+          <p className="text-muted mt-1 text-sm">
+            Manage venue-specific seat categories used by screen layouts.
+          </p>
+        </div>
+
+        {categoriesErrorMessage ? (
+          <Alert variant="destructive">
+            <AlertCircle className="size-4" />
+            <AlertDescription>{categoriesErrorMessage}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        {categoryFormError ? (
+          <Alert variant="destructive">
+            <AlertCircle className="size-4" />
+            <AlertDescription>{categoryFormError}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        <form
+          className="bg-surface grid gap-4 rounded-lg border p-4 shadow-sm lg:grid-cols-[1fr_10rem_8rem_auto] lg:items-end"
+          onSubmit={handleCreateCategory}
+        >
+          <div className="space-y-2">
+            <Label htmlFor="categoryName">Category Name</Label>
+            <Input
+              disabled={isCategorySubmitting}
+              id="categoryName"
+              maxLength={160}
+              onChange={(event) => setCategoryName(event.target.value)}
+              placeholder="Standard"
+              value={categoryName}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="categoryPrice">Default Price</Label>
+            <Input
+              disabled={isCategorySubmitting}
+              id="categoryPrice"
+              min={0}
+              onChange={(event) => setCategoryPrice(event.target.value)}
+              placeholder="12.50"
+              step="0.01"
+              type="number"
+              value={categoryPrice}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="categoryColor">Color</Label>
+            <Input
+              className="h-10 p-1"
+              disabled={isCategorySubmitting}
+              id="categoryColor"
+              onChange={(event) => setCategoryColor(event.target.value)}
+              type="color"
+              value={categoryColor}
+            />
+          </div>
+
+          <Button disabled={isCategorySubmitting} type="submit">
+            <CircleDollarSign className="size-4" />
+            Add Category
+          </Button>
+        </form>
+
+        <DataTable
+          columns={categoryColumns}
+          data={categories}
+          emptyMessage={
+            isCategoriesLoading ? "Loading Seat Categories..." : "No seat categories found."
+          }
+          loadingMessage="Loading Seat Categories..."
+          resultLabel="seat categories"
         />
       </div>
 
@@ -387,7 +755,7 @@ export default function VenueDetailsPage() {
                       <h4 className="text-base font-semibold tracking-normal">{screen.name}</h4>
                     </div>
                     <p className="text-muted mt-1 text-sm">
-                      {layout ? `${layout.name} · ${layout.seatCount} seats` : "No active layout"}
+                      {layout ? `${layout.name} · ${layout.seatCount} seats` : "No Active Layout"}
                     </p>
                   </div>
 

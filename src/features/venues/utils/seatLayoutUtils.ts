@@ -26,7 +26,10 @@ export function createSeatLayoutCells(rows: number, columns: number) {
   return seats;
 }
 
-export function getSeatDefinitions(seats: Array<SeatLayoutCell>) {
+export function getSeatDefinitions(
+  seats: Array<SeatLayoutCell>,
+  defaultCategoryId?: null | string,
+) {
   const seatsByRow = new Map<number, Array<SeatLayoutCell>>();
 
   for (const seat of seats) {
@@ -42,13 +45,22 @@ export function getSeatDefinitions(seats: Array<SeatLayoutCell>) {
 
       return rowSeats
         .sort((firstSeat, secondSeat) => firstSeat.positionX - secondSeat.positionX)
-        .map<SeatDefinitionPayload>((seat, seatIndex) => ({
-          isActive: seat.status === "seat",
-          positionX: seat.positionX,
-          positionY: seat.positionY,
-          rowLabel,
-          seatLabel: `${rowLabel}${seatIndex + 1}`,
-        }));
+        .map<SeatDefinitionPayload>((seat, seatIndex) => {
+          const categoryId = seat.categoryId ?? defaultCategoryId ?? undefined;
+          const section = seat.section?.trim();
+
+          return {
+            categoryId,
+            isAccessible: seat.isAccessible,
+            isActive: seat.status === "seat",
+            isRestricted: seat.isRestricted,
+            positionX: seat.positionX,
+            positionY: seat.positionY,
+            rowLabel: seat.rowLabel ?? rowLabel,
+            section: section || undefined,
+            seatLabel: seat.seatLabel ?? `${rowLabel}${seatIndex + 1}`,
+          };
+        });
     });
 }
 
@@ -73,8 +85,14 @@ export function getSeatCellsFromLayout(layout: SeatLayout | null) {
   }
 
   return layout.seatDefs.map<SeatLayoutCell>((seat) => ({
+    categoryId: seat.categoryId,
+    isAccessible: seat.isAccessible,
+    isRestricted: seat.isRestricted,
     positionX: seat.positionX,
     positionY: seat.positionY,
+    rowLabel: seat.rowLabel,
+    section: seat.section ?? undefined,
+    seatLabel: seat.seatLabel,
     status:
       !seat.isActive || disabledSeatKeys.has(getSeatKey(seat.positionX, seat.positionY))
         ? "disabled"

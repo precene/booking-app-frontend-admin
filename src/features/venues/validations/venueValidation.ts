@@ -22,6 +22,7 @@ export const venueScreenSetupSchema = z
   .object({
     active: z.boolean(),
     columns: z.number().int().min(1, "Columns are required").max(50, "Columns cannot exceed 50"),
+    defaultCategoryId: z.string().uuid("Invalid seat category").optional(),
     layoutName: z
       .string()
       .trim()
@@ -35,6 +36,12 @@ export const venueScreenSetupSchema = z
         z.object({
           positionX: z.number().int().min(1).max(32767),
           positionY: z.number().int().min(1).max(32767),
+          categoryId: z.string().uuid().nullable().optional(),
+          isAccessible: z.boolean().optional(),
+          isRestricted: z.boolean().optional(),
+          rowLabel: z.string().trim().min(1).max(4).optional(),
+          seatLabel: z.string().trim().min(1).max(8).optional(),
+          section: z.string().trim().min(1).max(50).optional(),
           status: z.enum(["seat", "disabled"]),
         }),
       )

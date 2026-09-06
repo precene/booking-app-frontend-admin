@@ -1,10 +1,10 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { useAuthStore } from "#/features/auth/store/authStore";
+import { getValidatedAdminUser } from "#/features/auth/middleware/authGuards";
 
 export const Route = createFileRoute("/")({
-  beforeLoad: () => {
-    const user = useAuthStore.getState().user;
+  beforeLoad: async () => {
+    const user = await getValidatedAdminUser();
 
     throw redirect({ to: user ? "/dashboard" : "/login" });
   },

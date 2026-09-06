@@ -110,7 +110,7 @@ export function VenueForm({
 
             <div className="grid gap-5 sm:grid-cols-2">
               <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="name">Venue name</Label>
+                <Label htmlFor="name">Venue Name</Label>
                 <Input
                   aria-describedby={errors.name ? "name-error" : undefined}
                   aria-invalid={Boolean(errors.name)}
@@ -142,7 +142,7 @@ export function VenueForm({
                     id="cityId"
                   >
                     <SelectValue
-                      placeholder={isCitiesLoading ? "Loading cities..." : "Select city"}
+                      placeholder={isCitiesLoading ? "Loading Cities..." : "Select City"}
                     />
                   </SelectTrigger>
                   <SelectContent>
@@ -190,7 +190,7 @@ export function VenueForm({
 
             <div className="grid gap-5 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="contactEmail">Contact email</Label>
+                <Label htmlFor="contactEmail">Contact Email</Label>
                 <Input
                   aria-describedby={errors.contactEmail ? "contact-email-error" : undefined}
                   aria-invalid={Boolean(errors.contactEmail)}
@@ -210,7 +210,7 @@ export function VenueForm({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="contactPhone">Contact phone</Label>
+                <Label htmlFor="contactPhone">Contact Phone</Label>
                 <Input
                   aria-describedby={errors.contactPhone ? "contact-phone-error" : undefined}
                   aria-invalid={Boolean(errors.contactPhone)}
@@ -246,7 +246,7 @@ export function VenueForm({
               />
 
               <span>
-                <span className="block text-sm font-medium">Active venue</span>
+                <span className="block text-sm font-medium">Active Venue</span>
                 <span className="text-muted mt-1 block text-sm">
                   Active venues can host screens, layouts, and show schedules.
                 </span>

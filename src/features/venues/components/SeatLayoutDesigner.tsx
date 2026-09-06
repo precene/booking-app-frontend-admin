@@ -159,7 +159,7 @@ export function SeatLayoutDesigner({
 
         <div
           className="mx-auto grid w-max gap-2"
-          style={{ gridTemplateColumns: `2rem repeat(${columns}, minmax(1.75rem, 1.75rem))` }}
+          style={{ gridTemplateColumns: `2rem repeat(${columns}, minmax(2.25rem, 2.25rem))` }}
         >
           {Array.from({ length: rows }).flatMap((_row, rowIndex) => {
             const positionY = rowIndex + 1;
@@ -175,13 +175,13 @@ export function SeatLayoutDesigner({
                 const positionX = columnIndex + 1;
                 const seat = seatByPosition.get(getSeatKey(positionX, positionY));
                 const status = seat?.status ?? "empty";
-                const label = getSeatLabel(seats, positionX, positionY);
+                const label = seat?.seatLabel ?? getSeatLabel(seats, positionX, positionY);
 
                 return (
                   <button
                     aria-label={`${label || "Gap"} ${status}`}
                     className={cn(
-                      "flex size-7 items-center justify-center rounded border text-[0.625rem] font-semibold transition-colors",
+                      "flex size-9 flex-col items-center justify-center rounded border text-[0.625rem] font-semibold leading-none transition-colors",
                       status === "seat" &&
                         "border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100",
                       status === "disabled" &&
@@ -194,7 +194,12 @@ export function SeatLayoutDesigner({
                     onClick={() => handleCellClick(positionX, positionY)}
                     type="button"
                   >
-                    {status === "empty" ? null : <Armchair aria-hidden="true" className="size-4" />}
+                    {status === "empty" ? null : (
+                      <>
+                        <Armchair aria-hidden="true" className="size-4" />
+                        <span>{label}</span>
+                      </>
+                    )}
                   </button>
                 );
               }),

@@ -1,9 +1,4 @@
-import type {
-  ListMoviesQuery,
-  Movie,
-  MoviePayload,
-  MovieUpdatePayload,
-} from "../types/movieTypes";
+import type { ListMoviesQuery, Movie, MoviePayload, MovieUpdatePayload } from "../types/movieTypes";
 
 import { apiClient } from "#/shared/services/apiClient";
 import type { ApiPaginated, ApiResponse } from "#/shared/types";
@@ -43,5 +38,4 @@ export const moviesApi = {
   // delete: async (id: string) => {
   //   await apiClient.delete(`/admin/movies/${id}`);
   // },
-
 };

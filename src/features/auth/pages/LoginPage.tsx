@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import type { AxiosError } from "axios";
 import { Eye, EyeOff, Film, Lock, Mail } from "lucide-react";
 
+import { hasAdminDashboardAccess } from "../middleware/authGuards";
 import { authApi } from "../services/authApi";
 import { useAuthStore } from "../store/authStore";
 import { loginSchema } from "../validations/loginValidation";
@@ -60,8 +61,9 @@ export default function LoginPage() {
       const response = await authApi.login(validation.data);
       const user = response.data.user;
 
-      if (user.role === "customer") {
+      if (!hasAdminDashboardAccess(user)) {
         await authApi.logout();
+        useAuthStore.getState().logout();
         setFormError("This account does not have access to the admin dashboard.");
         return;
       }
@@ -122,7 +124,7 @@ export default function LoginPage() {
 
           <div className="bg-surface rounded-lg border p-6 shadow-sm">
             <div>
-              <h2 className="text-2xl font-semibold tracking-normal">Sign in</h2>
+              <h2 className="text-2xl font-semibold tracking-normal">Sign In</h2>
               <p className="text-muted mt-2 text-sm">Enter your admin credentials to continue.</p>
             </div>
 
@@ -206,7 +208,7 @@ export default function LoginPage() {
               ) : null}
 
               <Button className="w-full" disabled={isSubmitting} type="submit">
-                {isSubmitting ? "Signing in..." : "Sign in"}
+                {isSubmitting ? "Signing In..." : "Sign In"}
               </Button>
             </form>
           </div>

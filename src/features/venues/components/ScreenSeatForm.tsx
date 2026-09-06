@@ -17,6 +17,7 @@ import {
 import type { FormValidationErrors } from "#/shared/utils/getFormValidationErrors";
 import { SeatLayoutDesigner } from "./SeatLayoutDesigner";
 import type { Screen, ScreenType } from "../types/screenTypes";
+import type { SeatCategory } from "../types/seatCategoryTypes";
 import type { SeatLayout, SeatLayoutCell } from "../types/seatLayoutTypes";
 import {
   createSeatLayoutCells,
@@ -28,6 +29,7 @@ import {
 export type ScreenSeatFormValues = {
   active: boolean;
   columns: number;
+  defaultCategoryId?: string;
   layoutName: string;
   name: string;
   rows: number;
@@ -39,6 +41,9 @@ export type ScreenSeatFormValues = {
 export type ScreenSeatFormErrors = FormValidationErrors<ScreenSeatFormValues>;
 
 type ScreenSeatFormProps = {
+  categories: Array<SeatCategory>;
+  categoriesErrorMessage?: null | string;
+  isCategoriesLoading?: boolean;
   description: string;
   errors: ScreenSeatFormErrors;
   formId: string;
@@ -58,6 +63,7 @@ type ScreenSeatFormProps = {
 export const initialScreenSeatFormValues: ScreenSeatFormValues = {
   active: true,
   columns: 12,
+  defaultCategoryId: undefined,
   layoutName: "Default Layout",
   name: "Screen 1",
   rows: 8,
@@ -67,9 +73,12 @@ export const initialScreenSeatFormValues: ScreenSeatFormValues = {
 };
 
 export function ScreenSeatForm({
+  categories,
+  categoriesErrorMessage,
   description,
   errors,
   formId,
+  isCategoriesLoading = false,
   isSubmitting,
   onSubmit,
   onUpdateField,
@@ -161,6 +170,47 @@ export function ScreenSeatForm({
                 type="number"
                 value={values.sortOrder}
               />
+
+              <div className="space-y-2">
+                <Label htmlFor="defaultCategoryId">Default Seat Category</Label>
+                <Select
+                  disabled={isCategoriesLoading}
+                  onValueChange={(value) =>
+                    onUpdateField("defaultCategoryId", value === "none" ? undefined : value)
+                  }
+                  value={values.defaultCategoryId ?? "none"}
+                >
+                  <SelectTrigger
+                    aria-describedby={
+                      errors.defaultCategoryId || categoriesErrorMessage
+                        ? "default-category-id-error"
+                        : undefined
+                    }
+                    aria-invalid={Boolean(errors.defaultCategoryId)}
+                    id="defaultCategoryId"
+                  >
+                    <SelectValue
+                      placeholder={
+                        isCategoriesLoading ? "Loading Categories..." : "Select Category"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No Category</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {errors.defaultCategoryId || categoriesErrorMessage ? (
+                  <p className="text-destructive text-sm" id="default-category-id-error">
+                    {errors.defaultCategoryId ?? categoriesErrorMessage}
+                  </p>
+                ) : null}
+              </div>
             </div>
 
             <label className="mt-5 flex items-start gap-3">
@@ -207,14 +257,22 @@ export function ScreenSeatForm({
 }
 
 export function getScreenSeatFormValues(screen: Screen, layout: SeatLayout | null) {
+  const seats = getSeatCellsFromLayout(layout);
+  const uniqueCategoryIds = new Set(
+    seats
+      .map((seat) => seat.categoryId)
+      .filter((categoryId): categoryId is string => Boolean(categoryId)),
+  );
+
   return {
     active: screen.active,
+    defaultCategoryId: uniqueCategoryIds.size === 1 ? [...uniqueCategoryIds][0] : undefined,
     layoutName: layout?.name ?? "Default Layout",
     name: screen.name,
     rows: getLayoutRows(layout),
     columns: getLayoutColumns(layout),
     screenType: screen.screenType,
-    seats: getSeatCellsFromLayout(layout),
+    seats,
     sortOrder: screen.sortOrder,
   };
 }

@@ -25,6 +25,7 @@ export default function EditVenuePage() {
   const { venueId } = useParams({ from: "/_protected/venues/$venueId_/edit" });
   const [venueForm, setVenueForm] = useState<VenueFormValues>(initialVenueFormValues);
   const [cities, setCities] = useState<Array<City>>([]);
+  const [originalCityId, setOriginalCityId] = useState<string | null>(null);
   const [errors, setErrors] = useState<VenueFormErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [citiesErrorMessage, setCitiesErrorMessage] = useState<string | null>(null);
@@ -45,7 +46,16 @@ export default function EditVenuePage() {
 
     try {
       const response = await venuesApi.get(venueId);
-      setVenueForm(getVenueFormValues(response.data.venue));
+      const venue = response.data.venue;
+      setOriginalCityId(venue.cityId);
+      setVenueForm(getVenueFormValues(venue));
+
+      try {
+        const cityResponse = await citiesApi.get(venue.cityId);
+        setCities((currentCities) => mergeCities(currentCities, cityResponse.data.city));
+      } catch {
+        // The venue can still be edited; the selected city field will show a validation state.
+      }
     } catch (error) {
       setFormError(getApiErrorMessage(error, "Unable to load venue details."));
     } finally {
@@ -59,7 +69,11 @@ export default function EditVenuePage() {
 
     try {
       const response = await citiesApi.list({ active: "true", limit: 100, page: 1 });
-      setCities(response.data.items.filter((city) => city.active));
+      setCities((currentCities) =>
+        response.data.items
+          .filter((city) => city.active || city.id === originalCityId)
+          .reduce(mergeCities, currentCities),
+      );
     } catch (error) {
       setCitiesErrorMessage(getApiErrorMessage(error, "Unable to load cities."));
     } finally {
@@ -87,7 +101,10 @@ export default function EditVenuePage() {
       return;
     }
 
-    if (!cities.some((city) => city.id === validation.data.cityId && city.active)) {
+    if (
+      validation.data.cityId !== originalCityId &&
+      !cities.some((city) => city.id === validation.data.cityId && city.active)
+    ) {
       setErrors({ cityId: "Select an active city" });
       return;
     }
@@ -99,7 +116,7 @@ export default function EditVenuePage() {
       const response = await venuesApi.update(venueId, validation.data);
       const venue = response.data.venue;
 
-      toast.success({ title: "Venue updated." });
+      toast.success({ title: "Venue Updated." });
       void navigate({ params: { venueId: venue.id }, to: "/venues/$venueId" });
     } catch (error) {
       setFormError(getApiErrorMessage(error, "Unable to update venue."));
@@ -126,7 +143,7 @@ export default function EditVenuePage() {
 
       {isLoading ? (
         <div className="bg-surface rounded-lg border p-6 shadow-sm">
-          <p className="text-muted text-sm font-medium">Loading venue details...</p>
+          <p className="text-muted text-sm font-medium">Loading Venue Details...</p>
         </div>
       ) : (
         <VenueForm
@@ -146,4 +163,10 @@ export default function EditVenuePage() {
       )}
     </section>
   );
+}
+
+function mergeCities(cities: Array<City>, city: City) {
+  if (cities.some((currentCity) => currentCity.id === city.id)) return cities;
+
+  return [...cities, city];
 }

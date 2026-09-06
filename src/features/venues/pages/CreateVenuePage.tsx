@@ -45,6 +45,7 @@ import { venueSchema, venueScreensSetupSchema } from "../validations/venueValida
 type ScreenSetupFormValues = {
   active: boolean;
   columns: number;
+  defaultCategoryId?: string;
   layoutName: string;
   name: string;
   rows: number;
@@ -62,6 +63,7 @@ const steps: Array<StepperStep> = [
 const initialScreenSetup: ScreenSetupFormValues = {
   active: true,
   columns: 12,
+  defaultCategoryId: undefined,
   layoutName: "Default Layout",
   name: "Screen 1",
   rows: 8,
@@ -249,11 +251,11 @@ export default function CreateVenuePage() {
           isActive: true,
           name: screenSetup.layoutName.trim() || `Layout ${index + 1}`,
           screenId: screen.id,
-          seatDefs: getSeatDefinitions(screenSetup.seats),
+          seatDefs: getSeatDefinitions(screenSetup.seats, screenSetup.defaultCategoryId),
         });
       }
 
-      toast.success({ title: "Venue created." });
+      toast.success({ title: "Venue Created." });
       void navigate({ to: "/venues" });
     } catch (error) {
       setFormError(
@@ -348,7 +350,7 @@ export default function CreateVenuePage() {
 
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="name">Venue name</Label>
+              <Label htmlFor="name">Venue Name</Label>
               <Input
                 aria-describedby={errors.name ? "name-error" : undefined}
                 aria-invalid={Boolean(errors.name)}
@@ -380,7 +382,7 @@ export default function CreateVenuePage() {
                   id="cityId"
                 >
                   <SelectValue
-                    placeholder={isCitiesLoading ? "Loading cities..." : "Select city"}
+                    placeholder={isCitiesLoading ? "Loading Cities..." : "Select City"}
                   />
                 </SelectTrigger>
                 <SelectContent>
@@ -419,7 +421,7 @@ export default function CreateVenuePage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="contactEmail">Contact email</Label>
+              <Label htmlFor="contactEmail">Contact Email</Label>
               <Input
                 aria-describedby={errors.contactEmail ? "contact-email-error" : undefined}
                 aria-invalid={Boolean(errors.contactEmail)}
@@ -439,7 +441,7 @@ export default function CreateVenuePage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="contactPhone">Contact phone</Label>
+              <Label htmlFor="contactPhone">Contact Phone</Label>
               <Input
                 aria-describedby={errors.contactPhone ? "contact-phone-error" : undefined}
                 aria-invalid={Boolean(errors.contactPhone)}
@@ -470,7 +472,7 @@ export default function CreateVenuePage() {
             />
 
             <span>
-              <span className="block text-sm font-medium">Active venue</span>
+              <span className="block text-sm font-medium">Active Venue</span>
               <span className="text-muted mt-1 block text-sm">
                 Active venues can host screens, layouts, and show schedules.
               </span>
@@ -495,7 +497,7 @@ export default function CreateVenuePage() {
           <div>
             <h3 className="text-xl font-semibold tracking-normal">Screens & Seating</h3>
             <p className="text-muted mt-1 text-sm">
-              Add Theatre Screens and Generate Their Active Seat Layouts.
+              Add theatre screens and generate their active seat layouts.
             </p>
           </div>
 
@@ -645,7 +647,7 @@ export default function CreateVenuePage() {
         <aside className="bg-surface rounded-lg border p-6 shadow-sm">
           <h3 className="text-base font-semibold tracking-normal">Capacity</h3>
           <p className="mt-4 text-3xl font-semibold tracking-normal">{totalCapacity}</p>
-          <p className="text-muted mt-1 text-sm">Total Seats Across {screens.length} Screens.</p>
+          <p className="text-muted mt-1 text-sm">Total seats across {screens.length} screens.</p>
 
           <div className="mt-5 space-y-3">
             {screens.map((screen, index) => (
@@ -655,8 +657,8 @@ export default function CreateVenuePage() {
               >
                 <p className="text-sm font-medium">{screen.name || `Screen ${index + 1}`}</p>
                 <p className="text-muted mt-1 text-sm">
-                  {screen.rows} Rows x {screen.columns} Columns With {getSeatCount(screen.seats)}{" "}
-                  Physical Seats
+                  {screen.rows} Rows x {screen.columns} Columns with {getSeatCount(screen.seats)}{" "}
+                  physical seats
                 </p>
               </div>
             ))}
