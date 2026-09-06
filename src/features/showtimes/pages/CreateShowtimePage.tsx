@@ -25,11 +25,15 @@ import { showtimesApi } from "../services/showtimesApi";
 import { showtimeFormSchema, showtimeSchema } from "../validations/showtimeValidation";
 
 const formId = "create-showtime-form";
+const movieSearchDebounceMs = 250;
+const movieSearchLimit = 20;
 
 export default function CreateShowtimePage() {
   const [showtimeForm, setShowtimeForm] = useState<ShowtimeFormValues>(initialShowtimeFormValues);
   const [venues, setVenues] = useState<Array<Venue>>([]);
   const [movies, setMovies] = useState<Array<Movie>>([]);
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const [movieSearch, setMovieSearch] = useState("");
   const [screens, setScreens] = useState<Array<Screen>>([]);
   const [errors, setErrors] = useState<ShowtimeFormErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -45,7 +49,17 @@ export default function CreateShowtimePage() {
   }, []);
 
   useEffect(() => {
-    void loadVenueOptions(showtimeForm.venueId);
+    const timeoutId = window.setTimeout(() => {
+      void loadMovies(movieSearch);
+    }, movieSearchDebounceMs);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [movieSearch]);
+
+  useEffect(() => {
+    void loadScreens(showtimeForm.venueId);
   }, [showtimeForm.venueId]);
 
   async function loadVenues() {
@@ -71,30 +85,43 @@ export default function CreateShowtimePage() {
     }
   }
 
-  async function loadVenueOptions(venueId: string) {
-    setMovies([]);
+  async function loadMovies(searchValue: string) {
+    setIsMoviesLoading(true);
+    setFormError(null);
+
+    try {
+      const response = await moviesApi.list({
+        active: "true",
+        limit: movieSearchLimit,
+        page: 1,
+        q: searchValue.trim(),
+      });
+      const activeMovies = response.data.items.filter((movie) => movie.active);
+
+      setMovies(mergeSelectedMovie(activeMovies, selectedMovie));
+    } catch (error) {
+      setFormError(getApiErrorMessage(error, "Unable to load active movies."));
+    } finally {
+      setIsMoviesLoading(false);
+    }
+  }
+
+  async function loadScreens(venueId: string) {
     setScreens([]);
 
     if (!venueId) {
       return;
     }
 
-    setIsMoviesLoading(true);
     setIsScreensLoading(true);
     setFormError(null);
 
     try {
-      const [moviesResponse, screensResponse] = await Promise.all([
-        moviesApi.listVenueMovies(venueId),
-        screensApi.list({ active: "true", venueId }),
-      ]);
-
-      setMovies(moviesResponse.data.movies.filter((movie) => movie.active));
+      const screensResponse = await screensApi.list({ active: "true", venueId });
       setScreens(screensResponse.data.screens.filter((screen) => screen.active));
     } catch (error) {
-      setFormError(getApiErrorMessage(error, "Unable to load venue movies and screens."));
+      setFormError(getApiErrorMessage(error, "Unable to load venue screens."));
     } finally {
-      setIsMoviesLoading(false);
       setIsScreensLoading(false);
     }
   }
@@ -103,11 +130,19 @@ export default function CreateShowtimePage() {
     field: TField,
     value: ShowtimeFormValues[TField],
   ) {
+    if (field === "movieId") {
+      setSelectedMovie(movies.find((movie) => movie.id === value) ?? null);
+    }
+
     setShowtimeForm((currentForm) => ({
       ...currentForm,
       [field]: value,
-      ...(field === "venueId" ? { movieId: "", screenId: "" } : {}),
+      ...(field === "venueId" ? { screenId: "" } : {}),
     }));
+  }
+
+  function updateMovieSearch(value: string) {
+    setMovieSearch(value);
   }
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
@@ -134,7 +169,10 @@ export default function CreateShowtimePage() {
       return;
     }
 
-    const movie = movies.find((movieItem) => movieItem.id === formValidation.data.movieId);
+    const movie =
+      selectedMovie?.id === formValidation.data.movieId
+        ? selectedMovie
+        : movies.find((movieItem) => movieItem.id === formValidation.data.movieId);
 
     if (!movie?.active) {
       setFormError("Selected movie is not active.");
@@ -189,17 +227,20 @@ export default function CreateShowtimePage() {
       ) : null}
 
       <ShowtimeForm
-        description="Select a venue, assigned movie, screen, date, and start time for a new show."
+        description="Select a venue, movie, screen, date, and start time for a new show."
         errors={errors}
         formId={formId}
         isMoviesLoading={isMoviesLoading}
         isScreensLoading={isScreensLoading}
         isSubmitting={isSubmitting}
         isVenuesLoading={isVenuesLoading}
+        movieSearch={movieSearch}
         movies={movies}
         onSubmit={handleSubmit}
+        onUpdateMovieSearch={updateMovieSearch}
         onUpdateField={updateField}
         screens={screens}
+        selectedMovie={selectedMovie}
         showtimeForm={showtimeForm}
         submitLabel="Save Showtime"
         submittingLabel="Saving..."
@@ -208,4 +249,12 @@ export default function CreateShowtimePage() {
       />
     </section>
   );
+}
+
+function mergeSelectedMovie(movies: Array<Movie>, selectedMovie: Movie | null) {
+  if (!selectedMovie || movies.some((movie) => movie.id === selectedMovie.id)) {
+    return movies;
+  }
+
+  return [selectedMovie, ...movies];
 }

@@ -42,7 +42,7 @@ function DatePicker({
     const nextSelectedDate = parseDateInputValue(value);
 
     if (nextSelectedDate) {
-      setVisibleMonth(startOfMonth(nextSelectedDate));
+      setVisibleMonth(nextSelectedDate.startOf("month"));
     }
   }, [value]);
 
@@ -52,27 +52,17 @@ function DatePicker({
     }
   }, [isDatePickerDisabled]);
 
-  function handleSelectDate(date: Date) {
+  function handleSelectDate(date: DateTime) {
     onValueChange(formatDateInputValue(date));
     setIsOpen(false);
   }
 
   function goToPreviousMonth() {
-    setVisibleMonth((currentMonth) => {
-      const previousMonth = new Date(currentMonth);
-      previousMonth.setMonth(previousMonth.getMonth() - 1);
-
-      return previousMonth;
-    });
+    setVisibleMonth((currentMonth) => currentMonth.minus({ months: 1 }).startOf("month"));
   }
 
   function goToNextMonth() {
-    setVisibleMonth((currentMonth) => {
-      const nextMonth = new Date(currentMonth);
-      nextMonth.setMonth(nextMonth.getMonth() + 1);
-
-      return nextMonth;
-    });
+    setVisibleMonth((currentMonth) => currentMonth.plus({ months: 1 }).startOf("month"));
   }
 
   return (
@@ -129,7 +119,7 @@ function DatePicker({
           ))}
 
           {calendarDays.map((date) => {
-            const isCurrentMonth = date.getMonth() === visibleMonth.getMonth();
+            const isCurrentMonth = date.hasSame(visibleMonth, "month");
             const isSelected = selectedDate ? isSameDate(date, selectedDate) : false;
             const isDateDisabled = minDate ? isBeforeDate(date, minDate) : false;
 
@@ -147,7 +137,7 @@ function DatePicker({
                 onClick={() => handleSelectDate(date)}
                 type="button"
               >
-                {date.getDate()}
+                {date.day}
               </button>
             );
           })}
@@ -158,24 +148,16 @@ function DatePicker({
 }
 
 function getInitialVisibleMonth(value: string) {
-  return startOfMonth(parseDateInputValue(value) ?? new Date());
+  return (parseDateInputValue(value) ?? DateTime.local()).startOf("month");
 }
 
-function getCalendarDays(visibleMonth: Date) {
-  const firstDayOfMonth = startOfMonth(visibleMonth);
-  const firstCalendarDay = new Date(firstDayOfMonth);
-  firstCalendarDay.setDate(firstCalendarDay.getDate() - firstDayOfMonth.getDay());
+function getCalendarDays(visibleMonth: DateTime) {
+  const firstDayOfMonth = visibleMonth.startOf("month");
+  const firstCalendarDay = firstDayOfMonth.minus({ days: firstDayOfMonth.weekday % 7 });
 
   return Array.from({ length: 42 }, (_, index) => {
-    const date = new Date(firstCalendarDay);
-    date.setDate(firstCalendarDay.getDate() + index);
-
-    return date;
+    return firstCalendarDay.plus({ days: index });
   });
-}
-
-function startOfMonth(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), 1);
 }
 
 function parseDateInputValue(value?: string) {
@@ -189,27 +171,27 @@ function parseDateInputValue(value?: string) {
     return null;
   }
 
-  return new Date(parsedDate.year, parsedDate.month - 1, parsedDate.day);
+  return parsedDate.startOf("day");
 }
 
-function formatDateInputValue(date: Date) {
-  return DateTime.fromJSDate(date).toISODate() ?? "";
+function formatDateInputValue(date: DateTime) {
+  return date.toISODate() ?? "";
 }
 
-function formatDisplayDate(date: Date) {
-  return DateTime.fromJSDate(date).toFormat("dd LLL yyyy");
+function formatDisplayDate(date: DateTime) {
+  return date.toFormat("dd LLL yyyy");
 }
 
-function formatMonthLabel(date: Date) {
-  return DateTime.fromJSDate(date).toFormat("LLLL yyyy");
+function formatMonthLabel(date: DateTime) {
+  return date.toFormat("LLLL yyyy");
 }
 
-function isBeforeDate(date: Date, minimumDate: Date) {
-  return date.getTime() < minimumDate.getTime();
+function isBeforeDate(date: DateTime, minimumDate: DateTime) {
+  return date.startOf("day").toMillis() < minimumDate.startOf("day").toMillis();
 }
 
-function isSameDate(firstDate: Date, secondDate: Date) {
-  return firstDate.getTime() === secondDate.getTime();
+function isSameDate(firstDate: DateTime, secondDate: DateTime) {
+  return firstDate.hasSame(secondDate, "day");
 }
 
 function getTodayDateInputValue() {

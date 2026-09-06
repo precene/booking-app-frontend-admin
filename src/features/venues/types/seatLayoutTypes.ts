@@ -1,8 +1,12 @@
 export type SeatDefinitionPayload = {
   categoryId?: null | string;
+  isAccessible?: boolean;
+  isActive?: boolean;
+  isRestricted?: boolean;
   positionX: number;
   positionY: number;
   rowLabel: string;
+  section?: string;
   seatLabel: string;
 };
 
@@ -16,7 +20,6 @@ export type SeatLayoutCell = {
 
 export type SeatDefinition = SeatDefinitionPayload & {
   id: string;
-  isActive: boolean;
 };
 
 export type SeatLayout = {

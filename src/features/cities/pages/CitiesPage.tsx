@@ -108,7 +108,7 @@ export default function CitiesPage() {
       const response = await citiesApi.list(query);
       setCities(response.data);
     } catch (error) {
-      setErrorMessage(getApiErrorMessage(error, "Unable To Load Cities."));
+      setErrorMessage(getApiErrorMessage(error, "Unable to load cities."));
     } finally {
       setIsLoading(false);
     }
@@ -150,7 +150,7 @@ export default function CitiesPage() {
         <div>
           <h2 className="text-2xl font-semibold tracking-normal">Cities</h2>
           <p className="text-muted mt-2 text-sm">
-            Manage Service Cities, Slugs, Resolved Timezones, And Catalog Availability.
+            Manage service cities, resolved timezones, and catalog availability.
           </p>
         </div>
 
@@ -215,8 +215,8 @@ export default function CitiesPage() {
       <DataTable
         columns={columns}
         data={cities.items}
-        emptyMessage={isLoading ? "Loading Cities..." : "No Cities Found."}
-        loadingMessage="Loading Cities..."
+        emptyMessage={isLoading ? "Loading cities..." : "No cities found."}
+        loadingMessage="Loading cities..."
         pagination={{
           isLoading,
           limit: cities.limit,

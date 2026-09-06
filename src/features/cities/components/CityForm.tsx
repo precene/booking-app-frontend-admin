@@ -14,7 +14,6 @@ import type { FormValidationErrors } from "#/shared/utils/getFormValidationError
 export type CityFormValues = {
   active: boolean;
   name: string;
-  slug: string;
 };
 
 export type CityFormErrors = FormValidationErrors<CityPayload>;
@@ -38,7 +37,6 @@ type CityFormProps = {
 export const initialCityFormValues: CityFormValues = {
   active: true,
   name: "",
-  slug: "",
 };
 
 export function CityForm({
@@ -108,25 +106,6 @@ export function CityForm({
                 </p>
               ) : null}
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="slug">Slug</Label>
-              <Input
-                aria-describedby={errors.slug ? "slug-error" : undefined}
-                aria-invalid={Boolean(errors.slug)}
-                id="slug"
-                name="slug"
-                onChange={(event) => onUpdateField("slug", event.target.value)}
-                placeholder="kathmandu"
-                value={cityForm.slug}
-              />
-
-              {errors.slug ? (
-                <p className="text-destructive text-sm" id="slug-error">
-                  {errors.slug}
-                </p>
-              ) : null}
-            </div>
           </div>
         </div>
 
@@ -147,7 +126,7 @@ export function CityForm({
               <span>
                 <span className="block text-sm font-medium">Active City</span>
                 <span className="text-muted mt-1 block text-sm">
-                  Active Cities Can Be Assigned To Venues And Used In The Catalog.
+                  Active cities can be assigned to venues and used in the catalog.
                 </span>
               </span>
             </label>
@@ -162,7 +141,6 @@ export function getCityPayload(formValues: CityFormValues): CityPayload {
   return {
     active: formValues.active,
     name: formValues.name.trim(),
-    slug: toOptionalString(formValues.slug),
   };
 }
 
@@ -170,12 +148,5 @@ export function getCityFormValues(city: City): CityFormValues {
   return {
     active: city.active,
     name: city.name,
-    slug: city.slug,
   };
-}
-
-function toOptionalString(value: string | undefined) {
-  const trimmedValue = value?.trim();
-
-  return trimmedValue ? trimmedValue : undefined;
 }

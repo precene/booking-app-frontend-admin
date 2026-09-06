@@ -10,7 +10,6 @@ export type City = {
 
 export type CityPayload = {
   name: string;
-  slug?: string;
   active?: boolean;
 };
 

@@ -2,6 +2,8 @@ import { DateTime } from "luxon";
 
 import type { Coupon } from "../types/couponTypes";
 
+export const couponBusinessTimezone = "Europe/London";
+
 export function formatCouponDiscount(
   coupon: Pick<Coupon, "discountAmountMinor" | "discountPercent">,
 ) {
@@ -30,7 +32,7 @@ export function formatCouponUsage(coupon: Pick<Coupon, "currentUses" | "maxUses"
 }
 
 export function formatCouponDate(value: string) {
-  const date = DateTime.fromISO(value);
+  const date = DateTime.fromISO(value).setZone(couponBusinessTimezone);
 
   if (!date.isValid) {
     return "Invalid Date";
@@ -40,8 +42,8 @@ export function formatCouponDate(value: string) {
 }
 
 export function formatMinorCurrency(value: number) {
-  return new Intl.NumberFormat("en-NP", {
-    currency: "NPR",
+  return new Intl.NumberFormat("en-GB", {
+    currency: "GBP",
     maximumFractionDigits: 2,
     minimumFractionDigits: 2,
     style: "currency",

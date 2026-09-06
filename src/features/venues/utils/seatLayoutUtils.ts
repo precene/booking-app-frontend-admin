@@ -7,7 +7,6 @@ import type {
 
 export type SeatLayoutConfig = {
   columns: number;
-  disabledSeats: Array<string>;
   rows: number;
 };
 
@@ -28,28 +27,38 @@ export function createSeatLayoutCells(rows: number, columns: number) {
 }
 
 export function getSeatDefinitions(seats: Array<SeatLayoutCell>) {
-  return seats.map<SeatDefinitionPayload>((seat) => {
-    const rowLabel = getRowLabel(seat.positionY - 1);
+  const seatsByRow = new Map<number, Array<SeatLayoutCell>>();
 
-    return {
-      positionX: seat.positionX,
-      positionY: seat.positionY,
-      rowLabel,
-      seatLabel: `${rowLabel}${seat.positionX}`,
-    };
-  });
+  for (const seat of seats) {
+    const rowSeats = seatsByRow.get(seat.positionY) ?? [];
+    rowSeats.push(seat);
+    seatsByRow.set(seat.positionY, rowSeats);
+  }
+
+  return [...seatsByRow.entries()]
+    .sort(([firstRowPositionY], [secondRowPositionY]) => firstRowPositionY - secondRowPositionY)
+    .flatMap(([rowPositionY, rowSeats]) => {
+      const rowLabel = getRowLabel(rowPositionY - 1);
+
+      return rowSeats
+        .sort((firstSeat, secondSeat) => firstSeat.positionX - secondSeat.positionX)
+        .map<SeatDefinitionPayload>((seat, seatIndex) => ({
+          isActive: seat.status === "seat",
+          positionX: seat.positionX,
+          positionY: seat.positionY,
+          rowLabel,
+          seatLabel: `${rowLabel}${seatIndex + 1}`,
+        }));
+    });
 }
 
 export function getSeatLayoutConfig(
   rows: number,
   columns: number,
-  seats: Array<SeatLayoutCell>,
+  _seats: Array<SeatLayoutCell>,
 ): SeatLayoutConfig {
   return {
     columns,
-    disabledSeats: seats
-      .filter((seat) => seat.status === "disabled")
-      .map((seat) => getSeatKey(seat.positionX, seat.positionY)),
     rows,
   };
 }
@@ -84,6 +93,16 @@ export function getSeatDefinitionsForDisplay(layout: SeatLayout | null) {
 
 export function getSeatCount(seats: Array<SeatLayoutCell>) {
   return seats.length;
+}
+
+export function getSeatLabel(seats: Array<SeatLayoutCell>, positionX: number, positionY: number) {
+  const rowLabel = getRowLabel(positionY - 1);
+  const rowSeatIndex = seats
+    .filter((seat) => seat.positionY === positionY)
+    .sort((firstSeat, secondSeat) => firstSeat.positionX - secondSeat.positionX)
+    .findIndex((seat) => seat.positionX === positionX);
+
+  return rowSeatIndex === -1 ? "" : `${rowLabel}${rowSeatIndex + 1}`;
 }
 
 export function getLayoutRows(layout: SeatLayout | null) {

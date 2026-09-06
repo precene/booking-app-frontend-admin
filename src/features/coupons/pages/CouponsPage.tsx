@@ -172,7 +172,7 @@ export default function CouponsPage() {
         <div>
           <h2 className="text-2xl font-semibold tracking-normal">Coupons</h2>
           <p className="text-muted mt-2 text-sm">
-            Manage Discount Codes, Validity Windows, Usage Limits, And Availability.
+            Manage discount codes, validity windows, usage limits, and availability.
           </p>
         </div>
 
@@ -237,8 +237,8 @@ export default function CouponsPage() {
       <DataTable
         columns={columns}
         data={coupons.items}
-        emptyMessage={isLoading ? "Loading Coupons..." : "No Coupons Found."}
-        loadingMessage="Loading Coupons..."
+        emptyMessage={isLoading ? "Loading coupons..." : "No coupons found."}
+        loadingMessage="Loading coupons..."
         pagination={{
           isLoading,
           limit: coupons.limit,
@@ -249,7 +249,7 @@ export default function CouponsPage() {
           },
           total: coupons.total,
         }}
-        resultLabel="coupons"
+        resultLabel="Coupons"
       />
     </section>
   );

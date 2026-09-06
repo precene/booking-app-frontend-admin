@@ -4,7 +4,11 @@ import { ArrowLeft, CalendarRange, Percent, Save, TicketPercent } from "lucide-r
 import type { SubmitEvent } from "react";
 
 import type { Coupon, CouponUpdatePayload } from "../types/couponTypes";
-import { formatCouponDiscount, formatCouponUsage } from "../utils/couponFormatters";
+import {
+  couponBusinessTimezone,
+  formatCouponDiscount,
+  formatCouponUsage,
+} from "../utils/couponFormatters";
 
 import { Button } from "#/shared/components/ui/button";
 import { Checkbox } from "#/shared/components/ui/checkbox";
@@ -52,6 +56,9 @@ export function CouponEditForm({
   submittingLabel,
   title,
 }: CouponEditFormProps) {
+  const minValidUntilDate =
+    DateTime.fromISO(coupon.validFrom).setZone(couponBusinessTimezone).toISODate() ?? undefined;
+
   return (
     <>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -130,7 +137,7 @@ export function CouponEditForm({
                 <span>
                   <span className="block text-sm font-medium">Active Coupon</span>
                   <span className="text-muted mt-1 block text-sm">
-                    Active Coupons Can Be Validated And Applied During Booking.
+                    Active coupons can be validated and applied during booking.
                   </span>
                 </span>
               </label>
@@ -174,6 +181,7 @@ export function CouponEditForm({
                   aria-describedby={errors.validUntil ? "valid-until-error" : undefined}
                   aria-invalid={Boolean(errors.validUntil)}
                   id="validUntil"
+                  min={minValidUntilDate}
                   name="validUntil"
                   onValueChange={(value) => onUpdateField("validUntil", value)}
                   value={couponForm.validUntil}
@@ -197,7 +205,9 @@ export function getCouponEditFormValues(coupon: Coupon): CouponEditFormValues {
   return {
     active: coupon.active,
     maxUses: coupon.maxUses === null ? "" : String(coupon.maxUses),
-    validUntil: coupon.validUntil ? (DateTime.fromISO(coupon.validUntil).toISODate() ?? "") : "",
+    validUntil: coupon.validUntil
+      ? (DateTime.fromISO(coupon.validUntil).setZone(couponBusinessTimezone).toISODate() ?? "")
+      : "",
   };
 }
 
@@ -224,7 +234,7 @@ function InfoItem({ label, value }: InfoItemProps) {
 }
 
 function toEndOfDayIso(value: string) {
-  const date = DateTime.fromISO(value);
+  const date = DateTime.fromISO(value, { zone: couponBusinessTimezone });
 
   return date.isValid ? (date.endOf("day").toUTC().toISO() ?? undefined) : undefined;
 }

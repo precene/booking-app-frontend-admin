@@ -4,6 +4,7 @@
 
 - Highest-priority rule: never edit, patch, format, or otherwise modify the backend. Inspect `C:\Users\Pratik\Documents\Backend\booking-app-backend\src` only as a read-only API/database contract.
 - Work only inside `booking-admin`. Do not inspect or modify `booking-customer` unless explicitly asked.
+- Never start the dev server on your own. Run `pnpm dev` or any equivalent local server only when the user explicitly asks.
 - This admin app manages movies, cities, venues, seating layouts, showtimes, bookings, customers, payments, coupons, admin users, and related dashboard workflows.
 
 ## Structure
@@ -55,7 +56,8 @@ features/
 - Use TanStack Table for admin data tables.
 - Do not hand-roll complex accessible primitives when a shared component or Radix primitive exists.
 - Keep the admin UI restrained, clear, and work-focused: compact spacing, readable tables/forms, subtle borders, and color used for meaning.
-- Use Title Case for visible UI labels, headings, button text, table headers, badges, and similar text.
+- Use Title Case for page titles, section/card titles, form labels, button text, table headers, badges, and similar short UI labels.
+- Use normal sentence case for subtitles, helper text, descriptions, empty-state explanations, and other sentence-style copy.
 
 ## Coding Style
 
@@ -72,9 +74,10 @@ features/
 
 ## RBF Reviews
 
-- When the user says `Do RBF`, perform a frontend/backend alignment review.
-- Review business logic consistency across frontend behavior, frontend validation, API services, backend routes, backend schemas, database columns, and backend services.
-- Identify frontend bugs, missing states, broken route/API contracts, validation gaps, security issues, performance concerns, scalability risks, and maintainability problems.
-- Since the backend is read-only, summarize backend-side issues clearly for the backend developer instead of editing backend files.
-- Present review output in Codex in review style: findings first, ordered by severity with file/line references when available, followed by assumptions, backend notes, and suggested frontend fixes.
-- Do not create, update, or move Trello cards after RBF unless the user explicitly asks for Trello updates.
+- `Do RBF` means review frontend/backend alignment for the requested section.
+- Check business logic, frontend behavior/validation/services, backend routes/schemas/database/services, bugs, missing states, API mismatches, security, performance, scalability, and maintainability.
+- Backend is read-only: report backend issues clearly for the backend developer, never edit backend files.
+- Each finding must state priority (`P0`, `P1`, `P2`, `P3`), area (`Frontend` or `Backend`), and fix location (`Frontend` or `Backend`). Use `P0` for critical blockers, `P1` for high priority, `P2` for medium priority, and `P3` for low priority.
+- Present findings first, ordered by severity with file/line references when available, then assumptions/notes/fix suggestions.
+- Also write RBF findings to `issues.md` at the project root for future tracking.
+- Do not create, update, or move Trello cards unless explicitly asked.

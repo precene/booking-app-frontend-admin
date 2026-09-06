@@ -1,37 +1,36 @@
-import type { ComponentProps, ReactNode } from "react";
+import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import type { ComponentProps } from "react";
 
 import { cn } from "#/shared/utils/cn";
 
-function TooltipProvider({ children }: { children?: ReactNode }) {
-  return <>{children}</>;
+function TooltipProvider(props: ComponentProps<typeof TooltipPrimitive.Provider>) {
+  return <TooltipPrimitive.Provider delayDuration={300} {...props} />;
 }
 
-function Tooltip({ children }: { children?: ReactNode }) {
-  return <span className="group/tooltip relative inline-flex">{children}</span>;
+function Tooltip(props: ComponentProps<typeof TooltipPrimitive.Root>) {
+  return <TooltipPrimitive.Root {...props} />;
 }
 
-function TooltipTrigger({ className, ...props }: ComponentProps<"span">) {
-  return <span className={cn("inline-flex", className)} {...props} />;
+function TooltipTrigger(props: ComponentProps<typeof TooltipPrimitive.Trigger>) {
+  return <TooltipPrimitive.Trigger {...props} />;
 }
 
 function TooltipContent({
   className,
-  sideOffset,
-  style,
+  sideOffset = 4,
   ...props
-}: ComponentProps<"span"> & {
-  sideOffset?: number;
-}) {
+}: ComponentProps<typeof TooltipPrimitive.Content>) {
   return (
-    <span
-      className={cn(
-        "bg-secondary text-secondary-foreground pointer-events-none absolute bottom-full left-1/2 z-50 hidden -translate-x-1/2 rounded-md px-3 py-1.5 text-xs whitespace-nowrap shadow-md group-focus-within/tooltip:block group-hover/tooltip:block",
-        className,
-      )}
-      role="tooltip"
-      style={{ marginBottom: sideOffset ?? 8, ...style }}
-      {...props}
-    />
+    <TooltipPrimitive.Portal>
+      <TooltipPrimitive.Content
+        className={cn(
+          "bg-secondary text-secondary-foreground data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 z-50 overflow-hidden rounded-md px-3 py-1.5 text-xs shadow-md",
+          className,
+        )}
+        sideOffset={sideOffset}
+        {...props}
+      />
+    </TooltipPrimitive.Portal>
   );
 }
 

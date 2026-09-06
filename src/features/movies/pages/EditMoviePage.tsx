@@ -11,7 +11,7 @@ import {
   type MovieFormValues,
 } from "../components/MovieForm";
 import { moviesApi } from "../services/moviesApi";
-import { movieSchema } from "../validations/movieValidation";
+import { movieUpdateSchema } from "../validations/movieValidation";
 
 import { Alert, AlertDescription } from "#/shared/components/ui/alert";
 import { toast } from "#/shared/components/ui/toast";
@@ -42,7 +42,7 @@ export default function EditMoviePage() {
       const response = await moviesApi.get(movieId);
       setMovieForm(getMovieFormValues(response.data.movie));
     } catch (error) {
-      setFormError(getApiErrorMessage(error, "Unable To Load Movie Details."));
+      setFormError(getApiErrorMessage(error, "Unable to load movie details."));
     } finally {
       setIsLoading(false);
     }
@@ -61,7 +61,7 @@ export default function EditMoviePage() {
     setFormError(null);
 
     const payload = getMoviePayload(movieForm);
-    const validation = movieSchema.safeParse(payload);
+    const validation = movieUpdateSchema.safeParse(payload);
 
     if (!validation.success) {
       setErrors(getFormValidationErrors(validation.error));
@@ -78,7 +78,7 @@ export default function EditMoviePage() {
       toast.success({ title: "Movie Updated." });
       void navigate({ params: { movieId: movie.id }, to: "/movies/$movieId" });
     } catch (error) {
-      setFormError(getApiErrorMessage(error, "Unable To Update Movie."));
+      setFormError(getApiErrorMessage(error, "Unable to update movie."));
     } finally {
       setIsSubmitting(false);
     }
@@ -95,11 +95,12 @@ export default function EditMoviePage() {
 
       {isLoading ? (
         <div className="bg-surface rounded-lg border p-6 shadow-sm">
-          <p className="text-muted text-sm font-medium">Loading Movie Details...</p>
+          <p className="text-muted text-sm font-medium">Loading movie details...</p>
         </div>
       ) : (
         <MovieForm
-          description="Update Movie Metadata, Media Links, And Availability Status."
+          description="Update movie metadata, media links, and availability status."
+          disablePastReleaseDate={false}
           errors={errors}
           formId={formId}
           isSubmitting={isSubmitting}

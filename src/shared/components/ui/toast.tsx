@@ -58,7 +58,8 @@ function ToastCard({ item }: { item: ToastItem }) {
         item.variant === "success" && "border-primary/30",
         item.variant === "destructive" && "border-destructive/30",
       )}
-      role="status"
+      aria-live={item.variant === "destructive" ? "assertive" : "polite"}
+      role={item.variant === "destructive" ? "alert" : "status"}
     >
       <Icon
         className={cn(

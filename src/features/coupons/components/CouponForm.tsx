@@ -4,6 +4,7 @@ import { ArrowLeft, CalendarRange, Percent, Save, TicketPercent } from "lucide-r
 import type { SubmitEvent } from "react";
 
 import type { CouponPayload } from "../types/couponTypes";
+import { couponBusinessTimezone } from "../utils/couponFormatters";
 import type { CouponDiscountType } from "../validations/couponValidation";
 
 import { Button } from "#/shared/components/ui/button";
@@ -57,7 +58,7 @@ export const initialCouponFormValues: CouponFormValues = {
   discountPercent: "",
   discountType: "percent",
   maxUses: "",
-  validFrom: DateTime.now().toISODate() ?? "",
+  validFrom: DateTime.now().setZone(couponBusinessTimezone).toISODate() ?? "",
   validUntil: "",
 };
 
@@ -324,13 +325,13 @@ function toMinorAmount(value: string) {
 }
 
 function toStartOfDayIso(value: string) {
-  const date = DateTime.fromISO(value);
+  const date = DateTime.fromISO(value, { zone: couponBusinessTimezone });
 
   return date.isValid ? (date.startOf("day").toUTC().toISO() ?? undefined) : undefined;
 }
 
 function toEndOfDayIso(value: string) {
-  const date = DateTime.fromISO(value);
+  const date = DateTime.fromISO(value, { zone: couponBusinessTimezone });
 
   return date.isValid ? (date.endOf("day").toUTC().toISO() ?? undefined) : undefined;
 }

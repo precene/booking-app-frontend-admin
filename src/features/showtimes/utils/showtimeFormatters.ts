@@ -13,7 +13,7 @@ export function formatShowtimeDateTime(value: string, timezone?: string) {
   const date = timezone ? DateTime.fromISO(value).setZone(timezone) : DateTime.fromISO(value);
 
   if (!date.isValid) {
-    return "Invalid date";
+    return "Invalid Date";
   }
 
   return date.toFormat("dd LLL yyyy, h:mm a");
@@ -23,7 +23,7 @@ export function formatShowtimeTime(value: string) {
   const date = DateTime.fromISO(value);
 
   if (!date.isValid) {
-    return "Invalid time";
+    return "Invalid Time";
   }
 
   return date.toFormat("h:mm a");
@@ -32,10 +32,11 @@ export function formatShowtimeTime(value: string) {
 export function getShowtimeDateRangeQuery(fromDate: string, toDate: string, timezone?: string) {
   const zone = timezone || undefined;
   const from = fromDate
-    ? DateTime.fromISO(fromDate, { zone }).startOf("day").toUTC().toISO()
+    ? (DateTime.fromISO(fromDate, { zone }).startOf("day").toUTC().toISO() ?? undefined)
     : undefined;
   const to = toDate
-    ? DateTime.fromISO(toDate, { zone }).plus({ days: 1 }).startOf("day").toUTC().toISO()
+    ? (DateTime.fromISO(toDate, { zone }).plus({ days: 1 }).startOf("day").toUTC().toISO() ??
+      undefined)
     : undefined;
 
   return { from, to };
