@@ -6,8 +6,11 @@ import { AlertCircle } from "lucide-react";
 import { citiesApi } from "#/features/cities/services/citiesApi";
 import { moviesApi } from "#/features/movies/services/moviesApi";
 import type { Movie } from "#/features/movies/types/movieTypes";
+import { seatCategoriesApi } from "#/features/venues/services/seatCategoriesApi";
+import { seatLayoutsApi } from "#/features/venues/services/seatLayoutsApi";
 import { screensApi } from "#/features/venues/services/screensApi";
 import { venuesApi } from "#/features/venues/services/venuesApi";
+import type { SeatCategory } from "#/features/venues/types/seatCategoryTypes";
 import type { Screen } from "#/features/venues/types/screenTypes";
 import type { Venue } from "#/features/venues/types/venueTypes";
 import { Alert, AlertDescription } from "#/shared/components/ui/alert";
@@ -35,11 +38,13 @@ export default function CreateShowtimePage() {
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [movieSearch, setMovieSearch] = useState("");
   const [screens, setScreens] = useState<Array<Screen>>([]);
+  const [priceCategories, setPriceCategories] = useState<Array<SeatCategory>>([]);
   const [errors, setErrors] = useState<ShowtimeFormErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isVenuesLoading, setIsVenuesLoading] = useState(true);
   const [isMoviesLoading, setIsMoviesLoading] = useState(false);
   const [isScreensLoading, setIsScreensLoading] = useState(false);
+  const [isPriceOverridesLoading, setIsPriceOverridesLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
@@ -61,6 +66,10 @@ export default function CreateShowtimePage() {
   useEffect(() => {
     void loadScreens(showtimeForm.venueId);
   }, [showtimeForm.venueId]);
+
+  useEffect(() => {
+    void loadPriceCategories(showtimeForm.screenId);
+  }, [showtimeForm.screenId]);
 
   async function loadVenues() {
     setIsVenuesLoading(true);
@@ -108,6 +117,7 @@ export default function CreateShowtimePage() {
 
   async function loadScreens(venueId: string) {
     setScreens([]);
+    setPriceCategories([]);
 
     if (!venueId) {
       return;
@@ -126,6 +136,51 @@ export default function CreateShowtimePage() {
     }
   }
 
+  async function loadPriceCategories(screenId: string) {
+    setPriceCategories([]);
+
+    if (!screenId) {
+      return;
+    }
+
+    setIsPriceOverridesLoading(true);
+    setFormError(null);
+
+    try {
+      const layoutsResponse = await seatLayoutsApi.list({ screenId });
+      const activeLayout = layoutsResponse.data.layouts.find((layout) => layout.isActive);
+
+      if (!activeLayout) {
+        return;
+      }
+
+      const [layoutResponse, categoriesResponse] = await Promise.all([
+        seatLayoutsApi.get(activeLayout.id),
+        seatCategoriesApi.list({ limit: 100, page: 1, screenId }),
+      ]);
+      const usedCategoryIds = new Set(
+        (layoutResponse.data.layout.seatDefs ?? [])
+          .map((seat) => seat.categoryId)
+          .filter((categoryId): categoryId is string => Boolean(categoryId)),
+      );
+      const usedCategories = categoriesResponse.data.items.filter((category) =>
+        usedCategoryIds.has(category.id),
+      );
+
+      setPriceCategories(usedCategories);
+      setShowtimeForm((currentForm) => ({
+        ...currentForm,
+        priceOverrides: Object.fromEntries(
+          usedCategories.map((category) => [category.id, String(category.defaultPriceMinor / 100)]),
+        ),
+      }));
+    } catch (error) {
+      setFormError(getApiErrorMessage(error, "Unable to load screen price categories."));
+    } finally {
+      setIsPriceOverridesLoading(false);
+    }
+  }
+
   function updateField<TField extends keyof ShowtimeFormValues>(
     field: TField,
     value: ShowtimeFormValues[TField],
@@ -137,7 +192,8 @@ export default function CreateShowtimePage() {
     setShowtimeForm((currentForm) => ({
       ...currentForm,
       [field]: value,
-      ...(field === "venueId" ? { screenId: "" } : {}),
+      ...(field === "venueId" ? { priceOverrides: {}, screenId: "" } : {}),
+      ...(field === "screenId" ? { priceOverrides: {} } : {}),
     }));
   }
 
@@ -186,12 +242,24 @@ export default function CreateShowtimePage() {
       return;
     }
 
-    const payload = getShowtimePayload(formValidation.data, venue);
+    const hasInvalidPriceOverride = priceCategories.some((category) => {
+      const value = formValidation.data.priceOverrides[category.id];
+      const amount = value === "" || value === undefined ? 0 : Number(value);
+
+      return !Number.isFinite(amount) || amount < 0 || amount > 10000;
+    });
+
+    if (hasInvalidPriceOverride) {
+      setErrors({ priceOverrides: "Price Overrides Must Be Between £0 And £10,000" });
+      return;
+    }
+
+    const payload = getShowtimePayload(formValidation.data, venue, priceCategories);
 
     if (DateTime.fromISO(payload.startsAt) <= DateTime.now()) {
       setErrors({
-        date: "Start date and time must be in the future",
-        time: "Start date and time must be in the future",
+        date: "Start Date And Time Must Be In The Future",
+        time: "Start Date And Time Must Be In The Future",
       });
       return;
     }
@@ -208,7 +276,7 @@ export default function CreateShowtimePage() {
 
     try {
       await showtimesApi.create(payloadValidation.data);
-      toast.success({ title: "Showtime created." });
+      toast.success({ title: "Showtime Created." });
       void navigate({ to: "/showtimes" });
     } catch (error) {
       setFormError(getApiErrorMessage(error, "Unable to create showtime."));
@@ -231,6 +299,7 @@ export default function CreateShowtimePage() {
         errors={errors}
         formId={formId}
         isMoviesLoading={isMoviesLoading}
+        isPriceOverridesLoading={isPriceOverridesLoading}
         isScreensLoading={isScreensLoading}
         isSubmitting={isSubmitting}
         isVenuesLoading={isVenuesLoading}
@@ -239,6 +308,7 @@ export default function CreateShowtimePage() {
         onSubmit={handleSubmit}
         onUpdateMovieSearch={updateMovieSearch}
         onUpdateField={updateField}
+        priceCategories={priceCategories}
         screens={screens}
         selectedMovie={selectedMovie}
         showtimeForm={showtimeForm}

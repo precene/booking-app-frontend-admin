@@ -143,7 +143,7 @@ export default function LoginPage() {
                     id="email"
                     name="email"
                     onChange={(event) => updateField("email", event.target.value)}
-                    placeholder="admin@977cinema.com"
+                    placeholder="Email Address"
                     type="email"
                     value={loginCredential.email}
                   />

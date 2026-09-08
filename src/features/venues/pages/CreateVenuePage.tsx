@@ -29,8 +29,6 @@ import {
   type VenueFormErrors,
   type VenueFormValues,
 } from "../components/VenueForm";
-import { screensApi } from "../services/screensApi";
-import { seatLayoutsApi } from "../services/seatLayoutsApi";
 import { venuesApi } from "../services/venuesApi";
 import type { SeatLayoutCell } from "../types/seatLayoutTypes";
 import type { ScreenType } from "../types/screenTypes";
@@ -45,7 +43,6 @@ import { venueSchema, venueScreensSetupSchema } from "../validations/venueValida
 type ScreenSetupFormValues = {
   active: boolean;
   columns: number;
-  defaultCategoryId?: string;
   layoutName: string;
   name: string;
   rows: number;
@@ -63,7 +60,6 @@ const steps: Array<StepperStep> = [
 const initialScreenSetup: ScreenSetupFormValues = {
   active: true,
   columns: 12,
-  defaultCategoryId: undefined,
   layoutName: "Default Layout",
   name: "Screen 1",
   rows: 8,
@@ -233,37 +229,26 @@ export default function CreateVenuePage() {
     setIsSubmitting(true);
 
     try {
-      const venueResponse = await venuesApi.create(venueValidation.data);
-      const venue = venueResponse.data.venue;
-
-      for (const [index, screenSetup] of screensValidation.data.entries()) {
-        const screenResponse = await screensApi.create({
+      await venuesApi.createSetup({
+        ...venueValidation.data,
+        screens: screensValidation.data.map((screenSetup, index) => ({
           active: screenSetup.active,
+          layout: {
+            config: getSeatLayoutConfig(screenSetup.rows, screenSetup.columns, screenSetup.seats),
+            isActive: true,
+            name: screenSetup.layoutName.trim() || `Layout ${index + 1}`,
+            seatDefs: getSeatDefinitions(screenSetup.seats),
+          },
           name: screenSetup.name.trim(),
           screenType: screenSetup.screenType,
           sortOrder: screenSetup.sortOrder,
-          venueId: venue.id,
-        });
-        const screen = screenResponse.data.screen;
-
-        await seatLayoutsApi.create({
-          config: getSeatLayoutConfig(screenSetup.rows, screenSetup.columns, screenSetup.seats),
-          isActive: true,
-          name: screenSetup.layoutName.trim() || `Layout ${index + 1}`,
-          screenId: screen.id,
-          seatDefs: getSeatDefinitions(screenSetup.seats, screenSetup.defaultCategoryId),
-        });
-      }
+        })),
+      });
 
       toast.success({ title: "Venue Created." });
       void navigate({ to: "/venues" });
     } catch (error) {
-      setFormError(
-        getApiErrorMessage(
-          error,
-          "Unable to create venue setup. Some records may have been created.",
-        ),
-      );
+      setFormError(getApiErrorMessage(error, "Unable to create venue setup."));
     } finally {
       setIsSubmitting(false);
     }
@@ -526,7 +511,7 @@ export default function CreateVenuePage() {
               </Button>
             </div>
 
-            <div className="grid gap-6 xl:grid-cols-[20rem_1fr]">
+            <div className="grid gap-6 xl:grid-cols-[20rem_minmax(0,1fr)]">
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor={`screen-${index}-name`}>Screen Name</Label>
@@ -568,14 +553,9 @@ export default function CreateVenuePage() {
 
                 <div className="space-y-2">
                   <Label htmlFor={`screen-${index}-sort`}>Sort Order</Label>
-                  <Input
+                  <SortOrderInput
                     id={`screen-${index}-sort`}
-                    max={32767}
-                    min={0}
-                    onChange={(event) =>
-                      updateScreenField(index, "sortOrder", Number(event.target.value))
-                    }
-                    type="number"
+                    onChange={(value) => updateScreenField(index, "sortOrder", value)}
                     value={screen.sortOrder}
                   />
                 </div>
@@ -598,7 +578,7 @@ export default function CreateVenuePage() {
                 </label>
               </div>
 
-              <div>
+              <div className="min-w-0">
                 <SeatLayoutDesigner
                   columns={screen.columns}
                   disabled={isSubmitting}
@@ -606,6 +586,7 @@ export default function CreateVenuePage() {
                   onRowsChange={(rows) => updateScreenField(index, "rows", rows)}
                   onSeatsChange={(seats) => updateScreenField(index, "seats", seats)}
                   rows={screen.rows}
+                  screenType={screen.screenType}
                   seats={screen.seats}
                 />
               </div>
@@ -613,6 +594,50 @@ export default function CreateVenuePage() {
           </div>
         ))}
       </div>
+    );
+  }
+
+  function SortOrderInput({
+    id,
+    onChange,
+    value,
+  }: {
+    id: string;
+    onChange: (value: number) => void;
+    value: number;
+  }) {
+    const [inputValue, setInputValue] = useState(String(value));
+
+    useEffect(() => {
+      setInputValue(String(value));
+    }, [value]);
+
+    function handleChange(value: string) {
+      setInputValue(value);
+
+      if (value) {
+        onChange(Number(value));
+      }
+    }
+
+    function handleBlur() {
+      const amount = Number(inputValue);
+      const normalizedValue = Number.isFinite(amount) ? Math.min(32767, Math.max(0, amount)) : 0;
+
+      setInputValue(String(normalizedValue));
+      onChange(normalizedValue);
+    }
+
+    return (
+      <Input
+        id={id}
+        max={32767}
+        min={0}
+        onBlur={handleBlur}
+        onChange={(event) => handleChange(event.target.value)}
+        type="number"
+        value={inputValue}
+      />
     );
   }
 

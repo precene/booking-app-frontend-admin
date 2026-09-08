@@ -13,6 +13,7 @@ import {
   type ScreenSeatFormErrors,
   type ScreenSeatFormValues,
 } from "../components/ScreenSeatForm";
+import { SeatCategoryManager } from "../components/SeatCategoryManager";
 import { seatCategoriesApi } from "../services/seatCategoriesApi";
 import { screensApi } from "../services/screensApi";
 import { seatLayoutsApi } from "../services/seatLayoutsApi";
@@ -49,7 +50,7 @@ export default function EditVenueScreenPage() {
     setCategoriesErrorMessage(null);
 
     try {
-      const response = await seatCategoriesApi.list({ limit: 100, page: 1, venueId });
+      const response = await seatCategoriesApi.list({ limit: 100, page: 1, screenId });
       setCategories(response.data.items);
     } catch (error) {
       setCategoriesErrorMessage(getApiErrorMessage(error, "Unable to load seat categories."));
@@ -116,7 +117,7 @@ export default function EditVenueScreenPage() {
         isActive: true,
         name: screenSetup.layoutName.trim(),
         screenId,
-        seatDefs: getSeatDefinitions(screenSetup.seats, screenSetup.defaultCategoryId),
+        seatDefs: getSeatDefinitions(screenSetup.seats),
       };
 
       if (layout) {
@@ -148,22 +149,37 @@ export default function EditVenueScreenPage() {
           <p className="text-muted text-sm font-medium">Loading screen and seat layout...</p>
         </div>
       ) : (
-        <ScreenSeatForm
-          categories={categories}
-          categoriesErrorMessage={categoriesErrorMessage}
-          description="Update screen metadata and its active seat layout."
-          errors={errors}
-          formId={formId}
-          isCategoriesLoading={isCategoriesLoading}
-          isSubmitting={isSubmitting}
-          onSubmit={handleSubmit}
-          onUpdateField={updateField}
-          submitLabel="Update Screen"
-          submittingLabel="Updating..."
-          title="Edit Screen"
-          values={formValues}
-          venueId={venueId}
-        />
+        <>
+          <ScreenSeatForm
+            categories={categories}
+            categoriesErrorMessage={categoriesErrorMessage}
+            description="Update screen metadata and its active seat layout."
+            errors={errors}
+            formId={formId}
+            isSubmitting={isSubmitting}
+            onSubmit={handleSubmit}
+            onUpdateField={updateField}
+            submitLabel="Update Screen"
+            submittingLabel="Updating..."
+            title="Edit Screen"
+            values={formValues}
+            venueId={venueId}
+          />
+
+          <SeatCategoryManager
+            assignedCategoryIds={[
+              ...new Set(
+                formValues.seats
+                  .map((seat) => seat.categoryId)
+                  .filter((categoryId): categoryId is string => Boolean(categoryId)),
+              ),
+            ]}
+            categories={categories}
+            isLoading={isCategoriesLoading}
+            onCategoriesChange={loadSeatCategories}
+            screenId={screenId}
+          />
+        </>
       )}
     </section>
   );

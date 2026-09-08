@@ -1,3 +1,6 @@
+import type { ScreenType } from "./screenTypes";
+import type { SeatDefinitionPayload } from "./seatLayoutTypes";
+
 export type Venue = {
   active: boolean;
   address: string;
@@ -21,6 +24,26 @@ export type VenuePayload = {
 };
 
 export type VenueUpdatePayload = Partial<VenuePayload>;
+
+export type VenueSetupPayload = VenuePayload & {
+  seatCategories?: Array<{
+    color?: string;
+    defaultPriceMinor: number;
+    name: string;
+  }>;
+  screens?: Array<{
+    active?: boolean;
+    layout?: {
+      config?: Record<string, unknown>;
+      isActive?: boolean;
+      name: string;
+      seatDefs?: Array<SeatDefinitionPayload>;
+    };
+    name: string;
+    screenType?: ScreenType;
+    sortOrder?: number;
+  }>;
+};
 
 export type ListVenuesQuery = {
   active?: "false" | "true";

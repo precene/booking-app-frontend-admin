@@ -6,8 +6,8 @@ export const paymentStatusOptions: Array<{ label: string; value: PaymentStatus }
   { label: "Pending", value: "pending" },
   { label: "Succeeded", value: "succeeded" },
   { label: "Failed", value: "failed" },
-  { label: "Refunded", value: "refunded" },
-  { label: "Partially Refunded", value: "partially_refunded" },
+  // { label: "Refunded", value: "refunded" },
+  // { label: "Partially Refunded", value: "partially_refunded" },
 ];
 
 export const paymentStatusLabels: Record<PaymentStatus, string> = {

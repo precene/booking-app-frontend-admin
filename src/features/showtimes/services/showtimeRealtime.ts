@@ -26,8 +26,8 @@ export type SeatMapSnapshotSeat = {
   id: string;
   isAccessible: boolean;
   isRestricted: boolean;
-  positionX?: number;
-  positionY?: number;
+  positionX: number;
+  positionY: number;
   priceMinor: number;
   rowLabel: string;
   section: string | null;

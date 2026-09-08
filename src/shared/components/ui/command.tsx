@@ -34,11 +34,11 @@ function CommandDialog({
 
 function CommandInput({ className, ...props }: ComponentProps<typeof CommandPrimitive.Input>) {
   return (
-    <div className="flex items-center border-b px-3">
-      <Search className="text-muted mr-2 size-4 shrink-0" />
+    <div className="border-input bg-surface focus-within:border-ring focus-within:ring-ring/25 flex h-9 items-center gap-2 rounded-md border px-3 shadow-sm transition-colors focus-within:ring-2">
+      <Search className="text-muted size-4 shrink-0" />
       <CommandPrimitive.Input
         className={cn(
-          "placeholder:text-muted flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50",
+          "placeholder:text-muted caret-primary flex h-full w-full min-w-0 border-none bg-transparent py-1 text-sm ring-0 outline-none disabled:cursor-not-allowed disabled:opacity-50",
           className,
         )}
         {...props}

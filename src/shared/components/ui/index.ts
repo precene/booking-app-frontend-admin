@@ -11,6 +11,7 @@ export * from "./label";
 export * from "./pagination";
 export * from "./popover";
 export * from "./select";
+export * from "./search-combobox";
 export * from "./stepper";
 export * from "./table";
 export * from "./textarea";

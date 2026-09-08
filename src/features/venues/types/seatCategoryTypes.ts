@@ -4,6 +4,7 @@ export type SeatCategory = {
   defaultPriceMinor: number;
   id: string;
   name: string;
+  screenId: null | string;
   updatedAt: string;
   usageCount: number;
   venueId: null | string;
@@ -13,6 +14,7 @@ export type SeatCategoryPayload = {
   color?: string;
   defaultPriceMinor: number;
   name: string;
+  screenId?: null | string;
   venueId?: null | string;
 };
 
@@ -22,5 +24,6 @@ export type ListSeatCategoriesQuery = {
   limit?: number;
   page?: number;
   q?: string;
+  screenId?: string;
   venueId?: string;
 };

@@ -5,7 +5,10 @@ import type { ApiResponse } from "#/shared/types";
 
 export const authApi = {
   login: async (payload: LoginPayload) => {
-    const response = await apiClient.post<ApiResponse<AuthUserResponse>>("/auth/login", payload);
+    const response = await apiClient.post<ApiResponse<AuthUserResponse>>(
+      "/auth/admin/login",
+      payload,
+    );
 
     return response.data;
   },

@@ -83,13 +83,14 @@ export type ListShowtimesQuery = {
 
 export type ShowSeat = {
   blockedReason: null | string;
+  categoryColor?: null | string;
   categoryId: null | string;
   categoryName: null | string;
   id: string;
   isAccessible: boolean;
   isRestricted: boolean;
-  positionX?: number;
-  positionY?: number;
+  positionX: number;
+  positionY: number;
   priceMinor: number;
   rowLabel: string;
   section: null | string;

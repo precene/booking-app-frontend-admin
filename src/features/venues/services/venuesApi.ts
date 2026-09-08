@@ -1,4 +1,10 @@
-import type { ListVenuesQuery, Venue, VenuePayload, VenueUpdatePayload } from "../types/venueTypes";
+import type {
+  ListVenuesQuery,
+  Venue,
+  VenuePayload,
+  VenueSetupPayload,
+  VenueUpdatePayload,
+} from "../types/venueTypes";
 
 import { apiClient } from "#/shared/services/apiClient";
 import type { ApiPaginated, ApiResponse } from "#/shared/types";
@@ -21,6 +27,15 @@ export const venuesApi = {
 
   create: async (payload: VenuePayload) => {
     const response = await apiClient.post<ApiResponse<{ venue: Venue }>>("/admin/venues", payload);
+
+    return response.data;
+  },
+
+  createSetup: async (payload: VenueSetupPayload) => {
+    const response = await apiClient.post<ApiResponse<{ setup: { venue: Venue } }>>(
+      "/admin/venue-setups",
+      payload,
+    );
 
     return response.data;
   },

@@ -31,17 +31,18 @@
 
 @layer base {
   html {
-    overflow-y: scroll;
-    scrollbar-gutter: stable;
+    height: 100%;
+    overflow: hidden;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
+    height: 100%;
+    overflow: hidden;
   }
 
-  body[data-scroll-locked] {
-    margin-right: 0 !important;
-    overflow: auto !important;
+  #app {
+    height: 100%;
   }
 
   ::selection {

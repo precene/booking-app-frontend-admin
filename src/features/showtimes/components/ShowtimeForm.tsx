@@ -1,33 +1,18 @@
 import { DateTime } from "luxon";
 import { Link } from "@tanstack/react-router";
-import {
-  ArrowLeft,
-  CalendarClock,
-  Check,
-  ChevronsUpDown,
-  Clock,
-  Film,
-  MapPin,
-  Save,
-} from "lucide-react";
-import { useState, type SubmitEvent } from "react";
+import { ArrowLeft, CalendarClock, Clock, Film, MapPin, Save } from "lucide-react";
+import type { SubmitEvent } from "react";
 
 import type { Movie } from "#/features/movies/types/movieTypes";
+import type { SeatCategory } from "#/features/venues/types/seatCategoryTypes";
 import type { Screen } from "#/features/venues/types/screenTypes";
 import type { Venue } from "#/features/venues/types/venueTypes";
+import { formatVenueMoney } from "#/features/venues/utils/venueFormatters";
 import { Button } from "#/shared/components/ui/button";
-import {
-  Command,
-  CommandEmpty,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "#/shared/components/ui/command";
 import { DatePicker } from "#/shared/components/ui/date-picker";
 import { Form } from "#/shared/components/ui/form";
 import { Input } from "#/shared/components/ui/input";
 import { Label } from "#/shared/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "#/shared/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -35,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "#/shared/components/ui/select";
-import { cn } from "#/shared/utils/cn";
+import { SearchCombobox } from "#/shared/components/ui/search-combobox";
 import type { FormValidationErrors } from "#/shared/utils/getFormValidationErrors";
 import type { ShowtimePayload } from "../types/showtimeTypes";
 import { combineShowtimeDateTime, formatShowtimeDateTime } from "../utils/showtimeFormatters";
@@ -43,6 +28,7 @@ import { combineShowtimeDateTime, formatShowtimeDateTime } from "../utils/showti
 export type ShowtimeFormValues = {
   date: string;
   movieId: string;
+  priceOverrides: Record<string, string>;
   screenId: string;
   time: string;
   venueId: string;
@@ -55,6 +41,7 @@ type ShowtimeFormProps = {
   errors: ShowtimeFormErrors;
   formId: string;
   isMoviesLoading: boolean;
+  isPriceOverridesLoading: boolean;
   isScreensLoading: boolean;
   isSubmitting: boolean;
   isVenuesLoading: boolean;
@@ -66,6 +53,7 @@ type ShowtimeFormProps = {
     field: TField,
     value: ShowtimeFormValues[TField],
   ) => void;
+  priceCategories: Array<SeatCategory>;
   screens: Array<Screen>;
   selectedMovie: Movie | null;
   submitLabel: string;
@@ -78,6 +66,7 @@ type ShowtimeFormProps = {
 export const initialShowtimeFormValues: ShowtimeFormValues = {
   date: "",
   movieId: "",
+  priceOverrides: {},
   screenId: "",
   time: "",
   venueId: "",
@@ -88,6 +77,7 @@ export function ShowtimeForm({
   errors,
   formId,
   isMoviesLoading,
+  isPriceOverridesLoading,
   isScreensLoading,
   isSubmitting,
   isVenuesLoading,
@@ -96,6 +86,7 @@ export function ShowtimeForm({
   onSubmit,
   onUpdateMovieSearch,
   onUpdateField,
+  priceCategories,
   screens,
   selectedMovie,
   submitLabel,
@@ -167,7 +158,7 @@ export function ShowtimeForm({
                     id="venueId"
                   >
                     <SelectValue
-                      placeholder={isVenuesLoading ? "Loading venues..." : "Select venue"}
+                      placeholder={isVenuesLoading ? "Loading Venues..." : "Select Venue"}
                     />
                   </SelectTrigger>
                   <SelectContent>
@@ -200,7 +191,7 @@ export function ShowtimeForm({
                     id="screenId"
                   >
                     <SelectValue
-                      placeholder={isScreensLoading ? "Loading screens..." : "Select screen"}
+                      placeholder={isScreensLoading ? "Loading Screens..." : "Select Screen"}
                     />
                   </SelectTrigger>
                   <SelectContent>
@@ -229,14 +220,27 @@ export function ShowtimeForm({
 
             <div className="space-y-2">
               <Label htmlFor="movieId">Movie</Label>
-              <MovieSearchCombobox
-                error={errors.movieId}
+              <SearchCombobox
+                aria-describedby={errors.movieId ? "movie-id-error" : undefined}
+                emptyLabel="No Active Movies Found."
+                error={Boolean(errors.movieId)}
+                getItemValue={(movie) => movie.id}
+                id="movieId"
                 isLoading={isMoviesLoading}
-                movies={movies}
+                items={movies}
+                loadingLabel="Loading Movies..."
                 onSearchChange={onUpdateMovieSearch}
                 onValueChange={(value) => onUpdateField("movieId", value)}
+                placeholder="Select Movie"
+                renderItem={(movie) => (
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">{movie.title}</p>
+                    <p className="text-muted text-xs">{movie.durationMinutes} Minutes</p>
+                  </div>
+                )}
                 search={movieSearch}
-                selectedMovie={selectedMovie}
+                searchPlaceholder="Search Movies..."
+                selectedLabel={selectedMovie?.title}
                 value={showtimeForm.movieId}
               />
 
@@ -274,7 +278,7 @@ export function ShowtimeForm({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="time">Start time</Label>
+                <Label htmlFor="time">Start Time</Label>
                 <Input
                   aria-describedby={errors.time ? "time-error" : undefined}
                   aria-invalid={Boolean(errors.time)}
@@ -293,6 +297,66 @@ export function ShowtimeForm({
               </div>
             </div>
           </div>
+
+          {showtimeForm.screenId ? (
+            <div className="bg-surface rounded-lg border p-6 shadow-sm">
+              <div className="mb-5">
+                <h3 className="text-base font-semibold tracking-normal">Price Overrides</h3>
+                <p className="text-muted mt-1 text-sm">
+                  Leave a price unchanged to use the screen category default.
+                </p>
+              </div>
+
+              {isPriceOverridesLoading ? (
+                <p className="text-muted text-sm font-medium">Loading Price Categories...</p>
+              ) : priceCategories.length ? (
+                <>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {priceCategories.map((category) => (
+                      <div className="space-y-2" key={category.id}>
+                        <Label htmlFor={`price-${category.id}`}>{category.name}</Label>
+                        <div className="flex items-center gap-3">
+                          <Input
+                            aria-describedby={
+                              errors.priceOverrides ? "price-overrides-error" : undefined
+                            }
+                            aria-invalid={Boolean(errors.priceOverrides)}
+                            id={`price-${category.id}`}
+                            min={0}
+                            onChange={(event) =>
+                              onUpdateField("priceOverrides", {
+                                ...showtimeForm.priceOverrides,
+                                [category.id]: event.target.value,
+                              })
+                            }
+                            step="0.01"
+                            type="number"
+                            value={
+                              showtimeForm.priceOverrides[category.id] ??
+                              String(category.defaultPriceMinor / 100)
+                            }
+                          />
+                          <span className="text-muted w-28 shrink-0 text-xs">
+                            Default {formatVenueMoney(category.defaultPriceMinor)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {errors.priceOverrides ? (
+                    <p className="text-destructive mt-3 text-sm" id="price-overrides-error">
+                      {errors.priceOverrides}
+                    </p>
+                  ) : null}
+                </>
+              ) : (
+                <p className="text-muted text-sm font-medium">
+                  No Seat Categories Found For This Screen.
+                </p>
+              )}
+            </div>
+          ) : null}
         </div>
 
         <aside className="space-y-6">
@@ -304,9 +368,9 @@ export function ShowtimeForm({
 
             <dl className="space-y-4">
               <div>
-                <dt className="text-muted text-xs font-medium uppercase">Venue timezone</dt>
+                <dt className="text-muted text-xs font-medium uppercase">Venue Timezone</dt>
                 <dd className="mt-1 text-sm font-medium">
-                  {selectedVenue?.timezone ?? "Select venue"}
+                  {selectedVenue?.timezone ?? "Select Venue"}
                 </dd>
               </div>
               <div>
@@ -314,15 +378,15 @@ export function ShowtimeForm({
                 <dd className="mt-1 text-sm font-medium">
                   {startsAtPreview && selectedVenue
                     ? formatShowtimeDateTime(startsAtPreview, selectedVenue.timezone)
-                    : "Not set"}
+                    : "Not Set"}
                 </dd>
               </div>
               <div>
-                <dt className="text-muted text-xs font-medium uppercase">Estimated end</dt>
+                <dt className="text-muted text-xs font-medium uppercase">Estimated End</dt>
                 <dd className="mt-1 text-sm font-medium">
                   {endsAtPreview && selectedVenue
                     ? formatShowtimeDateTime(endsAtPreview, selectedVenue.timezone)
-                    : "Not set"}
+                    : "Not Set"}
                 </dd>
               </div>
             </dl>
@@ -333,87 +397,32 @@ export function ShowtimeForm({
   );
 }
 
-export function getShowtimePayload(formValues: ShowtimeFormValues, venue: Venue): ShowtimePayload {
+export function getShowtimePayload(
+  formValues: ShowtimeFormValues,
+  venue: Venue,
+  priceCategories: Array<SeatCategory> = [],
+): ShowtimePayload {
+  const priceOverrides = priceCategories
+    .map((category) => {
+      const value = formValues.priceOverrides[category.id];
+      const amount = value === "" || value === undefined ? NaN : Number(value);
+      const priceMinor = Number.isFinite(amount)
+        ? Math.round(amount * 100)
+        : category.defaultPriceMinor;
+
+      return {
+        categoryId: category.id,
+        defaultPriceMinor: category.defaultPriceMinor,
+        priceMinor,
+      };
+    })
+    .filter((override) => override.priceMinor !== override.defaultPriceMinor)
+    .map(({ categoryId, priceMinor }) => ({ categoryId, priceMinor }));
+
   return {
     movieId: formValues.movieId,
+    ...(priceOverrides.length ? { priceOverrides } : {}),
     screenId: formValues.screenId,
     startsAt: combineShowtimeDateTime(formValues.date, formValues.time, venue.timezone) ?? "",
   };
-}
-
-type MovieSearchComboboxProps = {
-  error?: string;
-  isLoading: boolean;
-  movies: Array<Movie>;
-  onSearchChange: (value: string) => void;
-  onValueChange: (value: string) => void;
-  search: string;
-  selectedMovie: Movie | null;
-  value: string;
-};
-
-function MovieSearchCombobox({
-  error,
-  isLoading,
-  movies,
-  onSearchChange,
-  onValueChange,
-  search,
-  selectedMovie,
-  value,
-}: MovieSearchComboboxProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  function handleSelect(movieId: string) {
-    onValueChange(movieId);
-    onSearchChange("");
-    setIsOpen(false);
-  }
-
-  return (
-    <Popover onOpenChange={setIsOpen} open={isOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          aria-describedby={error ? "movie-id-error" : undefined}
-          aria-expanded={isOpen}
-          aria-invalid={Boolean(error)}
-          className={cn(
-            "w-full justify-between font-normal",
-            !selectedMovie && "text-muted",
-            error && "border-destructive",
-          )}
-          id="movieId"
-          role="combobox"
-          type="button"
-          variant="outline"
-        >
-          <span className="truncate">{selectedMovie?.title ?? "Select Movie"}</span>
-          <ChevronsUpDown className="text-muted size-4 shrink-0" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] p-0">
-        <Command filter={() => 1} shouldFilter={false}>
-          <CommandInput
-            onValueChange={onSearchChange}
-            placeholder="Search Movies..."
-            value={search}
-          />
-          <CommandList>
-            <CommandEmpty>
-              {isLoading ? "Loading Movies..." : "No Active Movies Found."}
-            </CommandEmpty>
-            {movies.map((movie) => (
-              <CommandItem key={movie.id} onSelect={() => handleSelect(movie.id)} value={movie.id}>
-                <Check className={cn("size-4", value === movie.id ? "opacity-100" : "opacity-0")} />
-                <div className="min-w-0">
-                  <p className="truncate font-medium">{movie.title}</p>
-                  <p className="text-muted text-xs">{movie.durationMinutes} Minutes</p>
-                </div>
-              </CommandItem>
-            ))}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState, type SubmitEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { AlertCircle } from "lucide-react";
 
@@ -12,10 +12,8 @@ import {
   type ScreenSeatFormErrors,
   type ScreenSeatFormValues,
 } from "../components/ScreenSeatForm";
-import { seatCategoriesApi } from "../services/seatCategoriesApi";
 import { screensApi } from "../services/screensApi";
 import { seatLayoutsApi } from "../services/seatLayoutsApi";
-import type { SeatCategory } from "../types/seatCategoryTypes";
 import { getSeatDefinitions, getSeatLayoutConfig } from "../utils/seatLayoutUtils";
 import { venueScreenSetupSchema } from "../validations/venueValidation";
 
@@ -24,32 +22,11 @@ const formId = "create-venue-screen-form";
 export default function CreateVenueScreenPage() {
   const { venueId } = useParams({ from: "/_protected/venues/$venueId_/screens/new" });
   const [formValues, setFormValues] = useState<ScreenSeatFormValues>(initialScreenSeatFormValues);
-  const [categories, setCategories] = useState<Array<SeatCategory>>([]);
   const [errors, setErrors] = useState<ScreenSeatFormErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
-  const [categoriesErrorMessage, setCategoriesErrorMessage] = useState<string | null>(null);
-  const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
-
-  useEffect(() => {
-    void loadSeatCategories();
-  }, [venueId]);
-
-  async function loadSeatCategories() {
-    setIsCategoriesLoading(true);
-    setCategoriesErrorMessage(null);
-
-    try {
-      const response = await seatCategoriesApi.list({ limit: 100, page: 1, venueId });
-      setCategories(response.data.items);
-    } catch (error) {
-      setCategoriesErrorMessage(getApiErrorMessage(error, "Unable to load seat categories."));
-    } finally {
-      setIsCategoriesLoading(false);
-    }
-  }
 
   function updateField<TField extends keyof ScreenSeatFormValues>(
     field: TField,
@@ -88,7 +65,7 @@ export default function CreateVenueScreenPage() {
         isActive: true,
         name: screenSetup.layoutName.trim(),
         screenId: screen.id,
-        seatDefs: getSeatDefinitions(screenSetup.seats, screenSetup.defaultCategoryId),
+        seatDefs: getSeatDefinitions(screenSetup.seats),
       });
 
       toast.success({ title: "Screen Created." });
@@ -110,12 +87,10 @@ export default function CreateVenueScreenPage() {
       ) : null}
 
       <ScreenSeatForm
-        categories={categories}
-        categoriesErrorMessage={categoriesErrorMessage}
+        categories={[]}
         description="Create a theatre screen and generate its active seat layout."
         errors={errors}
         formId={formId}
-        isCategoriesLoading={isCategoriesLoading}
         isSubmitting={isSubmitting}
         onSubmit={handleSubmit}
         onUpdateField={updateField}

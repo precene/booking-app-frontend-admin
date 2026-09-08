@@ -1,6 +1,6 @@
+import { useEffect, useState, type FocusEvent, type SubmitEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, LayoutGrid, Save } from "lucide-react";
-import type { SubmitEvent } from "react";
 
 import { Button } from "#/shared/components/ui/button";
 import { Checkbox } from "#/shared/components/ui/checkbox";
@@ -29,7 +29,6 @@ import {
 export type ScreenSeatFormValues = {
   active: boolean;
   columns: number;
-  defaultCategoryId?: string;
   layoutName: string;
   name: string;
   rows: number;
@@ -43,7 +42,6 @@ export type ScreenSeatFormErrors = FormValidationErrors<ScreenSeatFormValues>;
 type ScreenSeatFormProps = {
   categories: Array<SeatCategory>;
   categoriesErrorMessage?: null | string;
-  isCategoriesLoading?: boolean;
   description: string;
   errors: ScreenSeatFormErrors;
   formId: string;
@@ -63,7 +61,6 @@ type ScreenSeatFormProps = {
 export const initialScreenSeatFormValues: ScreenSeatFormValues = {
   active: true,
   columns: 12,
-  defaultCategoryId: undefined,
   layoutName: "Default Layout",
   name: "Screen 1",
   rows: 8,
@@ -78,7 +75,6 @@ export function ScreenSeatForm({
   description,
   errors,
   formId,
-  isCategoriesLoading = false,
   isSubmitting,
   onSubmit,
   onUpdateField,
@@ -118,8 +114,8 @@ export function ScreenSeatForm({
         noValidate
         onSubmit={onSubmit}
       >
-        <div className="grid gap-6 xl:grid-cols-[20rem_1fr]">
-          <div className="bg-surface rounded-lg border p-6 shadow-sm">
+        <div className="grid gap-6 xl:grid-cols-[20rem_minmax(0,1fr)]">
+          <div className="bg-surface min-w-0 rounded-lg border p-6 shadow-sm">
             <div className="mb-5 flex items-center gap-2">
               <LayoutGrid className="text-primary size-5" />
               <h3 className="text-base font-semibold tracking-normal">Screen & Layout</h3>
@@ -166,51 +162,14 @@ export function ScreenSeatForm({
                 label="Sort Order"
                 max={32767}
                 min={0}
-                onChange={(value) => onUpdateField("sortOrder", Number(value))}
+                onChange={(value) => {
+                  if (value) {
+                    onUpdateField("sortOrder", Number(value));
+                  }
+                }}
                 type="number"
                 value={values.sortOrder}
               />
-
-              <div className="space-y-2">
-                <Label htmlFor="defaultCategoryId">Default Seat Category</Label>
-                <Select
-                  disabled={isCategoriesLoading}
-                  onValueChange={(value) =>
-                    onUpdateField("defaultCategoryId", value === "none" ? undefined : value)
-                  }
-                  value={values.defaultCategoryId ?? "none"}
-                >
-                  <SelectTrigger
-                    aria-describedby={
-                      errors.defaultCategoryId || categoriesErrorMessage
-                        ? "default-category-id-error"
-                        : undefined
-                    }
-                    aria-invalid={Boolean(errors.defaultCategoryId)}
-                    id="defaultCategoryId"
-                  >
-                    <SelectValue
-                      placeholder={
-                        isCategoriesLoading ? "Loading Categories..." : "Select Category"
-                      }
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No Category</SelectItem>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                {errors.defaultCategoryId || categoriesErrorMessage ? (
-                  <p className="text-destructive text-sm" id="default-category-id-error">
-                    {errors.defaultCategoryId ?? categoriesErrorMessage}
-                  </p>
-                ) : null}
-              </div>
             </div>
 
             <label className="mt-5 flex items-start gap-3">
@@ -234,13 +193,21 @@ export function ScreenSeatForm({
               <h3 className="text-base font-semibold tracking-normal">Seat Layout</h3>
             </div>
 
+            {categoriesErrorMessage ? (
+              <p className="text-destructive mb-3 text-sm" id="default-category-id-error">
+                {categoriesErrorMessage}
+              </p>
+            ) : null}
+
             <SeatLayoutDesigner
+              categories={categories}
               columns={values.columns}
               disabled={isSubmitting}
               onColumnsChange={(columns) => onUpdateField("columns", columns)}
               onRowsChange={(rows) => onUpdateField("rows", rows)}
               onSeatsChange={(seats) => onUpdateField("seats", seats)}
               rows={values.rows}
+              screenType={values.screenType}
               seats={values.seats}
             />
 
@@ -258,15 +225,9 @@ export function ScreenSeatForm({
 
 export function getScreenSeatFormValues(screen: Screen, layout: SeatLayout | null) {
   const seats = getSeatCellsFromLayout(layout);
-  const uniqueCategoryIds = new Set(
-    seats
-      .map((seat) => seat.categoryId)
-      .filter((categoryId): categoryId is string => Boolean(categoryId)),
-  );
 
   return {
     active: screen.active,
-    defaultCategoryId: uniqueCategoryIds.size === 1 ? [...uniqueCategoryIds][0] : undefined,
     layoutName: layout?.name ?? "Default Layout",
     name: screen.name,
     rows: getLayoutRows(layout),
@@ -300,7 +261,27 @@ function FieldErrorInput({
   type = "text",
   value,
 }: FieldErrorInputProps) {
+  const [inputValue, setInputValue] = useState(String(value));
   const errorId = `${id}-error`;
+
+  useEffect(() => {
+    setInputValue(String(value));
+  }, [value]);
+
+  function handleChange(value: string) {
+    setInputValue(value);
+    onChange(value);
+  }
+
+  function handleBlur(event: FocusEvent<HTMLInputElement>) {
+    if (type !== "number") {
+      return;
+    }
+
+    const normalizedValue = getNormalizedNumberInput(event.target.value, min, max);
+    setInputValue(normalizedValue);
+    onChange(normalizedValue);
+  }
 
   return (
     <div className="space-y-2">
@@ -311,10 +292,11 @@ function FieldErrorInput({
         id={id}
         max={max}
         min={min}
-        onChange={(event) => onChange(event.target.value)}
+        onBlur={handleBlur}
+        onChange={(event) => handleChange(event.target.value)}
         placeholder={placeholder}
         type={type}
-        value={value}
+        value={inputValue}
       />
 
       {error ? (
@@ -324,4 +306,14 @@ function FieldErrorInput({
       ) : null}
     </div>
   );
+}
+
+function getNormalizedNumberInput(value: string, min?: number, max?: number) {
+  const amount = Number(value);
+
+  if (!Number.isFinite(amount)) {
+    return String(min ?? 0);
+  }
+
+  return String(Math.min(max ?? amount, Math.max(min ?? amount, amount)));
 }

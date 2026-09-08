@@ -1,19 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "@tanstack/react-router";
-import { AlertCircle, ArrowLeft, CalendarClock, RefreshCcw } from "lucide-react";
+import { AlertCircle, Armchair, ArrowLeft, CalendarClock, RefreshCcw } from "lucide-react";
 
 import { Alert, AlertDescription } from "#/shared/components/ui/alert";
 import { Button } from "#/shared/components/ui/button";
 import { cn } from "#/shared/utils/cn";
 import { getApiErrorMessage } from "#/shared/utils/getApiErrorMessage";
-import { seatLayoutsApi } from "#/features/venues/services/seatLayoutsApi";
-import type { SeatDefinition, SeatLayout } from "#/features/venues/types/seatLayoutTypes";
-import {
-  getLayoutColumns,
-  getLayoutRows,
-  getRowLabel,
-  getSeatKey,
-} from "#/features/venues/utils/seatLayoutUtils";
+import { screensApi } from "#/features/venues/services/screensApi";
+import type { ScreenType } from "#/features/venues/types/screenTypes";
+import { getRowLabel, getSeatKey } from "#/features/venues/utils/seatLayoutUtils";
 import { ShowtimeStatusBadge } from "../components/ShowtimeStatusBadge";
 import {
   createShowtimeSocket,
@@ -57,7 +52,7 @@ const seatLabelCollator = new Intl.Collator(undefined, { numeric: true, sensitiv
 export default function ShowtimeDetailsPage() {
   const { showId } = useParams({ from: "/_protected/showtimes/$showId" });
   const [show, setShow] = useState<Showtime | null>(null);
-  const [seatLayout, setSeatLayout] = useState<SeatLayout | null>(null);
+  const [screenType, setScreenType] = useState<ScreenType>("flat");
   const [seats, setSeats] = useState<Array<ShowSeat>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [socketStatus, setSocketStatus] = useState<"connected" | "connecting" | "disconnected">(
@@ -179,31 +174,23 @@ export default function ShowtimeDetailsPage() {
       const response = await showtimesApi.getSeatMap(showId);
       setShow(response.data.show);
       setSeats(response.data.seats);
-      await loadSeatLayout(response.data.show.screen.id);
+      await loadScreenType(response.data.show.screen.id);
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error, "Unable to load showtime booking seats."));
       setShow(null);
-      setSeatLayout(null);
+      setScreenType("flat");
       setSeats([]);
     } finally {
       setIsLoading(false);
     }
   }
 
-  async function loadSeatLayout(screenId: string) {
+  async function loadScreenType(screenId: string) {
     try {
-      const layoutsResponse = await seatLayoutsApi.list({ screenId });
-      const activeLayout = layoutsResponse.data.layouts.find((layout) => layout.isActive);
-
-      if (!activeLayout) {
-        setSeatLayout(null);
-        return;
-      }
-
-      const layoutResponse = await seatLayoutsApi.get(activeLayout.id);
-      setSeatLayout(layoutResponse.data.layout);
+      const screenResponse = await screensApi.get(screenId);
+      setScreenType(screenResponse.data.screen.screenType);
     } catch {
-      setSeatLayout(null);
+      setScreenType("flat");
     }
   }
 
@@ -226,10 +213,12 @@ export default function ShowtimeDetailsPage() {
           </p>
         </div>
 
-        <Button disabled={isLoading} onClick={loadSeatMap} type="button" variant="outline">
-          <RefreshCcw className="size-4" />
-          Refresh
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button disabled={isLoading} onClick={loadSeatMap} type="button" variant="outline">
+            <RefreshCcw className="size-4" />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {errorMessage ? (
@@ -303,7 +292,11 @@ export default function ShowtimeDetailsPage() {
                 </div>
               </div>
 
-              <SeatMapGrid layout={seatLayout} seatRows={seatRows} seats={seats} />
+              <SeatMapGrid
+                screenType={screenType}
+                seatRows={seatRows}
+                seats={seats}
+              />
             </div>
           </div>
 
@@ -320,12 +313,30 @@ export default function ShowtimeDetailsPage() {
                 <InfoItem label="Total" value={String(seats.length)} />
               </dl>
             </div>
+
+            <div className="bg-surface rounded-lg border p-6 shadow-sm">
+              <h3 className="text-base font-semibold tracking-normal">Seat Pricing</h3>
+
+              <dl className="mt-5 grid gap-3">
+                {show.byCategory.length ? (
+                  show.byCategory.map((category) => (
+                    <InfoItem
+                      key={`${category.categoryId ?? "uncategorized"}-${category.priceMinor}`}
+                      label={category.categoryName ?? "Uncategorized"}
+                      value={`${formatMoney(category.priceMinor)} / ${category.available} Available`}
+                    />
+                  ))
+                ) : (
+                  <p className="text-muted text-sm font-medium">No Pricing Found.</p>
+                )}
+              </dl>
+            </div>
           </aside>
         </div>
       ) : (
         <div className="bg-surface rounded-lg border p-6 shadow-sm">
           <p className="text-muted text-sm font-medium">
-            {isLoading ? "Loading showtime seats..." : "Showtime not found."}
+            {isLoading ? "Loading Showtime Seats..." : "Showtime Not Found."}
           </p>
         </div>
       )}
@@ -334,11 +345,11 @@ export default function ShowtimeDetailsPage() {
 }
 
 function SeatMapGrid({
-  layout,
+  screenType,
   seatRows,
   seats,
 }: {
-  layout: SeatLayout | null;
+  screenType: ScreenType;
   seatRows: Array<{ rowLabel: string; seats: Array<ShowSeat> }>;
   seats: Array<ShowSeat>;
 }) {
@@ -350,7 +361,7 @@ function SeatMapGrid({
     );
   }
 
-  if (!layout?.seatDefs?.length) {
+  if (!hasSeatPositions(seats)) {
     return (
       <div className="max-w-full overflow-x-auto pb-2">
         <div className="flex w-max min-w-full flex-col gap-2">
@@ -369,20 +380,39 @@ function SeatMapGrid({
     );
   }
 
-  const columns = getLayoutColumns(layout);
-  const rows = getLayoutRows(layout);
-  const layoutSeatByPosition = new Map(
-    layout.seatDefs.map((seat) => [getSeatKey(seat.positionX, seat.positionY), seat]),
+  const showSeatByPosition = new Map(
+    seats.flatMap((seat) =>
+      typeof seat.positionX === "number" && typeof seat.positionY === "number"
+        ? [[getSeatKey(seat.positionX, seat.positionY), seat] as const]
+        : [],
+    ),
   );
-  const showSeatByLayoutSeat = new Map(
-    seats.map((seat) => [getShowSeatLookupKey(seat.rowLabel, seat.seatLabel), seat]),
-  );
+  const columns = Math.max(...seats.map((seat) => seat.positionX ?? 1));
+  const rows = Math.max(...seats.map((seat) => seat.positionY ?? 1));
+  const assignedCategories = getAssignedSeatCategories(seats);
 
   return (
     <div className="max-w-full overflow-x-auto pb-2">
       <div className="bg-surface-muted w-max min-w-full rounded-md border p-4">
+        {assignedCategories.length ? (
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            {assignedCategories.map((category) => (
+              <span
+                className="bg-surface inline-flex items-center gap-2 rounded-md border px-2.5 py-1 text-xs font-medium"
+                key={category.id}
+              >
+                <span
+                  className="size-3 rounded-sm border"
+                  style={{ backgroundColor: category.color }}
+                />
+                {category.name}
+              </span>
+            ))}
+          </div>
+        ) : null}
+
         <p className="text-muted mb-2 text-center text-xs font-semibold uppercase">Screen</p>
-        <div className="bg-foreground/80 mx-auto mb-5 h-2 w-48 rounded-full" />
+        <ScreenShape screenType={screenType} />
 
         <div
           className="mx-auto grid w-max gap-2"
@@ -400,27 +430,17 @@ function SeatMapGrid({
               </div>,
               ...Array.from({ length: columns }).map((_column, columnIndex) => {
                 const positionX = columnIndex + 1;
-                const layoutSeat = layoutSeatByPosition.get(getSeatKey(positionX, positionY));
-
-                if (!layoutSeat) {
-                  return (
-                    <span
-                      aria-label="Gap"
-                      className="border-border bg-surface flex size-9 items-center justify-center rounded-md border"
-                      key={getSeatKey(positionX, positionY)}
-                      title="Gap"
-                    />
-                  );
-                }
-
-                const seat = showSeatByLayoutSeat.get(
-                  getShowSeatLookupKey(layoutSeat.rowLabel, layoutSeat.seatLabel),
-                );
+                const seat = showSeatByPosition.get(getSeatKey(positionX, positionY));
 
                 return seat ? (
                   <SeatCell key={seat.id} seat={seat} />
                 ) : (
-                  <LayoutOnlySeatCell key={getSeatKey(positionX, positionY)} seat={layoutSeat} />
+                  <span
+                    aria-label="Gap"
+                    className="border-border bg-surface flex size-9 items-center justify-center rounded-md border"
+                    key={getSeatKey(positionX, positionY)}
+                    title="Gap"
+                  />
                 );
               }),
             ];
@@ -432,27 +452,83 @@ function SeatMapGrid({
 }
 
 function SeatCell({ seat }: { seat: ShowSeat }) {
+  const categoryStyle =
+    seat.status === "available" && seat.categoryColor
+      ? {
+          backgroundColor: seat.categoryColor,
+          borderColor: seat.categoryColor,
+          color: "#ffffff",
+        }
+      : undefined;
+
   return (
     <span
       className={cn(
-        "flex size-9 items-center justify-center rounded-md border text-xs font-semibold",
+        "flex size-9 flex-col items-center justify-center rounded border text-[0.625rem] leading-none font-semibold",
         seatStatusStyles[seat.status],
       )}
-      title={`${seat.seatLabel} - ${seatStatusLabels[seat.status]}`}
+      style={categoryStyle}
+      title={getSeatTitle(seat)}
     >
-      {seat.seatLabel}
+      <Armchair aria-hidden="true" className="size-4" />
+      <span>{seat.seatLabel}</span>
     </span>
   );
 }
 
-function LayoutOnlySeatCell({ seat }: { seat: SeatDefinition }) {
-  return (
-    <span
-      className="flex size-9 items-center justify-center rounded-md border border-amber-300 bg-amber-100 text-xs font-semibold text-amber-800"
-      title={`${seat.seatLabel} - Disabled`}
-    >
-      {seat.seatLabel}
-    </span>
+function ScreenShape({ screenType }: { screenType: ScreenType }) {
+  if (screenType === "curved") {
+    return (
+      <div className="mx-auto mb-4 h-7 w-56 overflow-hidden">
+        <div className="border-foreground/80 h-14 w-full rounded-[50%] border-t-4" />
+      </div>
+    );
+  }
+
+  return <div className="bg-foreground/80 mx-auto mb-4 h-2 w-48 rounded-full" />;
+}
+
+function hasSeatPositions(seats: Array<ShowSeat>) {
+  return seats.every(
+    (seat) =>
+      typeof seat.positionX === "number" &&
+      seat.positionX > 0 &&
+      typeof seat.positionY === "number" &&
+      seat.positionY > 0,
+  );
+}
+
+function getSeatTitle(seat: ShowSeat) {
+  const titleParts = [`${seat.seatLabel} - ${seatStatusLabels[seat.status]}`];
+
+  if (seat.categoryName) {
+    titleParts.push(seat.categoryName);
+  }
+
+  if (seat.blockedReason) {
+    titleParts.push(`Blocked: ${seat.blockedReason}`);
+  }
+
+  return titleParts.join(" / ");
+}
+
+function getAssignedSeatCategories(seats: Array<ShowSeat>) {
+  const categoryById = new Map<string, { color: string; id: string; name: string }>();
+
+  seats.forEach((seat) => {
+    if (!seat.categoryId || !seat.categoryName || !seat.categoryColor) {
+      return;
+    }
+
+    categoryById.set(seat.categoryId, {
+      color: seat.categoryColor,
+      id: seat.categoryId,
+      name: seat.categoryName,
+    });
+  });
+
+  return [...categoryById.values()].sort((firstCategory, secondCategory) =>
+    firstCategory.name.localeCompare(secondCategory.name),
   );
 }
 
@@ -496,6 +572,9 @@ function groupSeatsByRow(seats: Array<ShowSeat>) {
     }));
 }
 
-function getShowSeatLookupKey(rowLabel: string, seatLabel: string) {
-  return `${rowLabel}:${seatLabel}`;
+function formatMoney(amountMinor: number) {
+  return new Intl.NumberFormat("en-GB", {
+    currency: "GBP",
+    style: "currency",
+  }).format(amountMinor / 100);
 }

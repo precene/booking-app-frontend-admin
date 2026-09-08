@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const citySchema = z
   .object({
-    name: z.string().trim().min(1, "City name is required").max(160, "City name is too long"),
+    name: z.string().trim().min(1, "City name is required.").max(160, "City name is too long."),
     active: z.boolean().optional(),
   })
   .superRefine((value, context) => {
@@ -12,7 +12,7 @@ export const citySchema = z
 
     context.addIssue({
       code: "custom",
-      message: "City name must produce a valid URL slug",
+      message: "City name must produce a valid URL slug.",
       path: ["name"],
     });
   });

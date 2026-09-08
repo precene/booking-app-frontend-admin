@@ -26,10 +26,7 @@ export function createSeatLayoutCells(rows: number, columns: number) {
   return seats;
 }
 
-export function getSeatDefinitions(
-  seats: Array<SeatLayoutCell>,
-  defaultCategoryId?: null | string,
-) {
+export function getSeatDefinitions(seats: Array<SeatLayoutCell>) {
   const seatsByRow = new Map<number, Array<SeatLayoutCell>>();
 
   for (const seat of seats) {
@@ -46,8 +43,9 @@ export function getSeatDefinitions(
       return rowSeats
         .sort((firstSeat, secondSeat) => firstSeat.positionX - secondSeat.positionX)
         .map<SeatDefinitionPayload>((seat, seatIndex) => {
-          const categoryId = seat.categoryId ?? defaultCategoryId ?? undefined;
+          const categoryId = seat.categoryId ?? undefined;
           const section = seat.section?.trim();
+          const seatLabel = `${seat.rowLabel ?? rowLabel}${seatIndex + 1}`;
 
           return {
             categoryId,
@@ -58,7 +56,7 @@ export function getSeatDefinitions(
             positionY: seat.positionY,
             rowLabel: seat.rowLabel ?? rowLabel,
             section: section || undefined,
-            seatLabel: seat.seatLabel ?? `${rowLabel}${seatIndex + 1}`,
+            seatLabel,
           };
         });
     });

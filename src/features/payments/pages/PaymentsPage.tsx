@@ -12,7 +12,6 @@ import {
   formatCardDetails,
   formatPaymentDate,
   formatPaymentMoney,
-  formatStatusText,
   paymentStatusOptions,
 } from "../utils/paymentFormatters";
 import { paymentFiltersSchema } from "../validations/paymentValidation";
@@ -83,7 +82,7 @@ export default function PaymentsPage() {
     return [
       {
         accessorKey: "id",
-        header: "Payment",
+        header: "Payment ID / Date",
         cell: ({ row }) => (
           <div className="min-w-44 space-y-1">
             <p className="text-sm font-medium">{row.original.id.slice(0, 8)}</p>
@@ -93,9 +92,9 @@ export default function PaymentsPage() {
       },
       {
         accessorKey: "booking.reference",
-        header: "Booking",
+        header: "Booking Reference",
         cell: ({ row }) => (
-          <div className="min-w-40 space-y-1">
+          <div className="min-w-40">
             <Link
               className="text-primary font-medium hover:underline"
               params={{ bookingId: row.original.bookingId }}
@@ -103,9 +102,6 @@ export default function PaymentsPage() {
             >
               {row.original.booking.reference}
             </Link>
-            <p className="text-muted text-xs">
-              Status: {formatStatusText(row.original.booking.status)}
-            </p>
           </div>
         ),
       },
@@ -217,6 +213,25 @@ export default function PaymentsPage() {
         className="bg-surface flex flex-wrap items-end gap-4 rounded-lg border p-4 shadow-sm"
         onSubmit={handleSearch}
       >
+        <div className="w-full sm:w-80">
+          <Label htmlFor="payment-search">Search</Label>
+          <Input
+            aria-describedby={queryError ? "payment-search-error" : undefined}
+            aria-invalid={Boolean(queryError)}
+            className={cn(queryError && "border-destructive focus-visible:ring-destructive/30")}
+            disabled={isLoading}
+            id="payment-search"
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Booking reference, customer name, or email"
+            value={query}
+          />
+          {queryError ? (
+            <p className="text-destructive mt-1 text-xs" id="payment-search-error">
+              {queryError}
+            </p>
+          ) : null}
+        </div>
+
         <div className="w-full sm:w-48">
           <Label htmlFor="payment-status">Status</Label>
           <Select
@@ -236,25 +251,6 @@ export default function PaymentsPage() {
               ))}
             </SelectContent>
           </Select>
-        </div>
-
-        <div className="w-full sm:w-80">
-          <Label htmlFor="payment-search">Search</Label>
-          <Input
-            aria-describedby={queryError ? "payment-search-error" : undefined}
-            aria-invalid={Boolean(queryError)}
-            className={cn(queryError && "border-destructive focus-visible:ring-destructive/30")}
-            disabled={isLoading}
-            id="payment-search"
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Booking reference, customer name, or email"
-            value={query}
-          />
-          {queryError ? (
-            <p className="text-destructive mt-1 text-xs" id="payment-search-error">
-              {queryError}
-            </p>
-          ) : null}
         </div>
 
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">

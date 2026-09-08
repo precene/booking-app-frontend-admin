@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type SubmitEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { AlertCircle, BookOpenCheck, Eye, FilterX, RefreshCcw, Search } from "lucide-react";
+import { AlertCircle, Eye, FilterX, RefreshCcw, Search } from "lucide-react";
 
 import { BookingStatusBadge } from "../components/BookingStatusBadge";
 import { bookingsApi } from "../services/bookingsApi";
@@ -193,10 +193,7 @@ export default function BookingsPage() {
   return (
     <section className="space-y-6">
       <div>
-        <div className="flex items-center gap-2">
-          <BookOpenCheck className="text-primary size-6" />
-          <h2 className="text-2xl font-semibold tracking-normal">Bookings</h2>
-        </div>
+        <h2 className="text-2xl font-semibold tracking-normal">Bookings</h2>
 
         <p className="text-muted mt-2 text-sm">
           Review customer reservations, payment status, show references, and seat holds.

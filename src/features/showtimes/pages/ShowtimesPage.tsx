@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type SubmitEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { AlertCircle, CalendarClock, Eye, FilterX, Plus, RefreshCcw } from "lucide-react";
+import { AlertCircle, Eye, FilterX, Plus, RefreshCcw } from "lucide-react";
 
 import { citiesApi } from "#/features/cities/services/citiesApi";
 import { moviesApi } from "#/features/movies/services/moviesApi";
@@ -110,7 +110,7 @@ export default function ShowtimesPage() {
 
           return (
             <span className="text-sm font-medium">
-              {available} / {total} available
+              {available} / {total} Available
             </span>
           );
         },
@@ -265,10 +265,7 @@ export default function ShowtimesPage() {
     <section className="space-y-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <div className="flex items-center gap-2">
-            <CalendarClock className="text-primary size-6" />
-            <h2 className="text-2xl font-semibold tracking-normal">Showtimes</h2>
-          </div>
+          <h2 className="text-2xl font-semibold tracking-normal">Showtimes</h2>
 
           <p className="text-muted mt-2 text-sm">
             Assign movies to venue screens with scheduled date and time.
@@ -358,10 +355,10 @@ export default function ShowtimesPage() {
             value={status}
           >
             <SelectTrigger id="showtime-status">
-              <SelectValue placeholder="All status" />
+              <SelectValue placeholder="All Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={allValue}>All status</SelectItem>
+              <SelectItem value={allValue}>All Status</SelectItem>
               {showtimeStatusOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
@@ -429,8 +426,8 @@ export default function ShowtimesPage() {
       <DataTable
         columns={columns}
         data={showtimes.items}
-        emptyMessage={isLoading ? "Loading showtimes..." : "No showtimes found."}
-        loadingMessage="Loading showtimes..."
+        emptyMessage={isLoading ? "Loading Showtimes..." : "No Showtimes Found."}
+        loadingMessage="Loading Showtimes..."
         pagination={{
           isLoading,
           limit: showtimes.limit,

@@ -19,7 +19,12 @@ import {
 import { authApi } from "#/features/auth/services/authApi";
 import { useAuthStore } from "#/features/auth/store/authStore";
 import { Button } from "#/shared/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "#/shared/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "#/shared/components/ui/tooltip";
 import { cn } from "#/shared/utils/cn";
 
 const navItems = [
@@ -51,82 +56,84 @@ export function AdminLayout() {
   }
 
   return (
-    <div className="bg-background flex min-h-screen">
-      <aside
-        className={cn(
-          "bg-surface fixed inset-y-0 left-0 z-40 flex flex-col border-r transition-[width] duration-200",
-          isCollapsed ? "w-18" : "w-64",
-        )}
-      >
-        <div className="flex h-16 items-center gap-3 border-b px-4">
-          <div className="bg-primary text-primary-foreground flex size-9 shrink-0 items-center justify-center rounded-lg">
-            <ReceiptText className="size-5" />
+    <TooltipProvider>
+      <div className="bg-background flex h-screen overflow-hidden">
+        <aside
+          className={cn(
+            "bg-surface fixed inset-y-0 left-0 z-40 flex flex-col border-r transition-[width] duration-200",
+            isCollapsed ? "w-18" : "w-60",
+          )}
+        >
+          <div className="flex h-16 items-center gap-3 border-b px-4">
+            <div className="bg-primary text-primary-foreground flex size-9 shrink-0 items-center justify-center rounded-lg">
+              <ReceiptText className="size-5" />
+            </div>
+            {!isCollapsed ? (
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold">977Cinema</p>
+                <p className="text-muted truncate text-xs">Admin Panel</p>
+              </div>
+            ) : null}
           </div>
-          {!isCollapsed ? (
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold">977Cinema</p>
-              <p className="text-muted truncate text-xs">Admin Panel</p>
-            </div>
-          ) : null}
-        </div>
 
-        <nav className="flex-1 space-y-1 px-3 py-4">
-          {navItems.map((item) => (
-            <SidebarLink isCollapsed={isCollapsed} item={item} key={item.to} />
-          ))}
-        </nav>
+          <nav className="flex-1 space-y-1 px-3 py-4">
+            {navItems.map((item) => (
+              <SidebarLink isCollapsed={isCollapsed} item={item} key={item.to} />
+            ))}
+          </nav>
 
-        <div className="border-t p-3">
-          <Button
-            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className={cn("w-full", isCollapsed && "px-0")}
-            onClick={() => setIsCollapsed((currentValue) => !currentValue)}
-            type="button"
-            variant="outline"
-          >
-            {isCollapsed ? (
-              <ChevronRight className="size-4" />
-            ) : (
-              <>
-                <ChevronLeft className="size-4" />
-                Collapse
-              </>
-            )}
-          </Button>
-        </div>
-      </aside>
-
-      <div
-        className={cn(
-          "flex min-h-screen flex-1 flex-col transition-[padding-left] duration-200",
-          isCollapsed ? "pl-18" : "pl-64",
-        )}
-      >
-        <header className="bg-surface/95 sticky top-0 z-30 border-b backdrop-blur">
-          <div className="flex h-16 items-center justify-between px-6">
-            <div className="min-w-0">
-              <h1 className="max-w-80 truncate text-sm font-semibold tracking-normal">
-                {user?.fullName ?? user?.email}
-              </h1>
-              <p className="text-muted max-w-96 truncate text-xs">
-                {user ? `${user.email}` : null}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Button onClick={handleLogout} type="button">
-                <LogOut className="size-4" />
-                Logout
-              </Button>
-            </div>
+          <div className="border-t p-3">
+            <Button
+              aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              className={cn("w-full", isCollapsed && "px-0")}
+              onClick={() => setIsCollapsed((currentValue) => !currentValue)}
+              type="button"
+              variant="outline"
+            >
+              {isCollapsed ? (
+                <ChevronRight className="size-4" />
+              ) : (
+                <>
+                  <ChevronLeft className="size-4" />
+                  Collapse
+                </>
+              )}
+            </Button>
           </div>
-        </header>
+        </aside>
 
-        <main className="flex-1 px-6 py-6">
-          <Outlet />
-        </main>
+        <div
+          className={cn(
+            "flex h-screen flex-1 flex-col transition-[padding-left] duration-200",
+            isCollapsed ? "pl-18" : "pl-60",
+          )}
+        >
+          <header className="bg-surface/95 z-30 shrink-0 border-b backdrop-blur">
+            <div className="flex h-16 items-center justify-between px-6">
+              <div className="min-w-0">
+                <h1 className="max-w-80 truncate text-sm font-semibold tracking-normal">
+                  {user?.fullName ?? user?.email}
+                </h1>
+                <p className="text-muted max-w-96 truncate text-xs">
+                  {user ? `${user.email}` : null}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Button onClick={handleLogout} type="button">
+                  <LogOut className="size-4" />
+                  Logout
+                </Button>
+              </div>
+            </div>
+          </header>
+
+          <main className="flex-1 overflow-y-auto px-6 py-6">
+            <Outlet />
+          </main>
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 }
 
@@ -154,7 +161,7 @@ function SidebarLink({ isCollapsed, item }: { isCollapsed: boolean; item: Sideba
 
   return (
     <Tooltip>
-      <TooltipTrigger>{link}</TooltipTrigger>
+      <TooltipTrigger asChild>{link}</TooltipTrigger>
       <TooltipContent>{item.label}</TooltipContent>
     </Tooltip>
   );

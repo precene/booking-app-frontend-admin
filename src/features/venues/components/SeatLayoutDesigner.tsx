@@ -1,9 +1,12 @@
-import { Armchair, Eraser, Grid2X2, MousePointer2 } from "lucide-react";
+import { useEffect, useState, type CSSProperties } from "react";
+import { Armchair, Eraser, Grid2X2, MousePointer2, Tags } from "lucide-react";
 
 import { Button } from "#/shared/components/ui/button";
 import { Input } from "#/shared/components/ui/input";
 import { Label } from "#/shared/components/ui/label";
 import { cn } from "#/shared/utils/cn";
+import type { SeatCategory } from "../types/seatCategoryTypes";
+import type { ScreenType } from "../types/screenTypes";
 import type { SeatLayoutCell, SeatLayoutCellStatus } from "../types/seatLayoutTypes";
 import {
   createSeatLayoutCells,
@@ -14,34 +17,75 @@ import {
 } from "../utils/seatLayoutUtils";
 
 type SeatLayoutDesignerProps = {
+  categories?: Array<SeatCategory>;
   columns: number;
   disabled?: boolean;
   onColumnsChange: (columns: number) => void;
   onRowsChange: (rows: number) => void;
   onSeatsChange: (seats: Array<SeatLayoutCell>) => void;
   rows: number;
+  screenType?: ScreenType;
   seats: Array<SeatLayoutCell>;
 };
 
 const cellStatuses: Array<SeatLayoutCellStatus | "empty"> = ["seat", "empty", "disabled"];
+const layoutMode = "layout";
+const categoryMode = "category";
 
 export function SeatLayoutDesigner({
+  categories = [],
   columns,
   disabled = false,
   onColumnsChange,
   onRowsChange,
   onSeatsChange,
   rows,
+  screenType = "flat",
   seats,
 }: SeatLayoutDesignerProps) {
+  const [mode, setMode] = useState<typeof categoryMode | typeof layoutMode>(layoutMode);
+  const [columnsInput, setColumnsInput] = useState(String(columns));
+  const [rowsInput, setRowsInput] = useState(String(rows));
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>();
+  const hasCategories = categories.length > 0;
+  const effectiveMode = hasCategories ? mode : layoutMode;
   const seatByPosition = new Map(
     seats.map((seat) => [getSeatKey(seat.positionX, seat.positionY), seat]),
   );
+  const categoryById = new Map(categories.map((category) => [category.id, category]));
   const seatCount = getSeatCount(seats);
   const disabledSeatCount = seats.filter((seat) => seat.status === "disabled").length;
 
+  useEffect(() => {
+    setRowsInput(String(rows));
+  }, [rows]);
+
+  useEffect(() => {
+    setColumnsInput(String(columns));
+  }, [columns]);
+
+  function handleRowsChange(value: string) {
+    setRowsInput(value);
+  }
+
+  function handleColumnsChange(value: string) {
+    setColumnsInput(value);
+  }
+
+  function normalizeRowsInput() {
+    const normalizedRows = normalizeDimension(Number(rowsInput), 25);
+    updateRows(normalizedRows);
+    setRowsInput(String(normalizedRows));
+  }
+
+  function normalizeColumnsInput() {
+    const normalizedColumns = normalizeDimension(Number(columnsInput), 25);
+    updateColumns(normalizedColumns);
+    setColumnsInput(String(normalizedColumns));
+  }
+
   function updateRows(nextRows: number) {
-    const normalizedRows = normalizeDimension(nextRows, 40);
+    const normalizedRows = normalizeDimension(nextRows, 25);
     onRowsChange(normalizedRows);
     onSeatsChange(
       seats.filter((seat) => seat.positionY <= normalizedRows && seat.positionX <= columns),
@@ -49,7 +93,7 @@ export function SeatLayoutDesigner({
   }
 
   function updateColumns(nextColumns: number) {
-    const normalizedColumns = normalizeDimension(nextColumns, 50);
+    const normalizedColumns = normalizeDimension(nextColumns, 25);
     onColumnsChange(normalizedColumns);
     onSeatsChange(
       seats.filter((seat) => seat.positionY <= rows && seat.positionX <= normalizedColumns),
@@ -60,6 +104,23 @@ export function SeatLayoutDesigner({
     if (disabled) return;
 
     const seat = seatByPosition.get(getSeatKey(positionX, positionY));
+
+    if (effectiveMode === categoryMode) {
+      if (!seat) return;
+
+      onSeatsChange(
+        seats.map((item) =>
+          item.positionX === positionX && item.positionY === positionY
+            ? {
+                ...item,
+                categoryId: item.categoryId === selectedCategoryId ? null : selectedCategoryId,
+              }
+            : item,
+        ),
+      );
+      return;
+    }
+
     const currentStatus = seat?.status ?? "empty";
     const nextStatus = getNextStatus(currentStatus);
 
@@ -92,6 +153,11 @@ export function SeatLayoutDesigner({
     onSeatsChange([]);
   }
 
+  function selectCategory(categoryId: string | undefined) {
+    setSelectedCategoryId(categoryId);
+    setMode(categoryMode);
+  }
+
   return (
     <div className="space-y-5">
       <div className="grid gap-5 sm:grid-cols-2">
@@ -100,11 +166,12 @@ export function SeatLayoutDesigner({
           <Input
             disabled={disabled}
             id="layoutRows"
-            max={40}
+            max={25}
             min={1}
-            onChange={(event) => updateRows(Number(event.target.value))}
+            onBlur={normalizeRowsInput}
+            onChange={(event) => handleRowsChange(event.target.value)}
             type="number"
-            value={rows}
+            value={rowsInput}
           />
         </div>
 
@@ -113,11 +180,12 @@ export function SeatLayoutDesigner({
           <Input
             disabled={disabled}
             id="layoutColumns"
-            max={50}
+            max={25}
             min={1}
-            onChange={(event) => updateColumns(Number(event.target.value))}
+            onBlur={normalizeColumnsInput}
+            onChange={(event) => handleColumnsChange(event.target.value)}
             type="number"
-            value={columns}
+            value={columnsInput}
           />
         </div>
       </div>
@@ -130,6 +198,36 @@ export function SeatLayoutDesigner({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <Button
+            className={cn(
+              effectiveMode === layoutMode &&
+                "bg-primary text-primary-foreground hover:bg-primary/90",
+            )}
+            disabled={disabled}
+            onClick={() => setMode(layoutMode)}
+            size="sm"
+            type="button"
+            variant={effectiveMode === layoutMode ? "default" : "outline"}
+          >
+            <MousePointer2 className="size-4" />
+            Layout
+          </Button>
+          {hasCategories ? (
+            <Button
+              className={cn(
+                effectiveMode === categoryMode &&
+                  "bg-primary text-primary-foreground hover:bg-primary/90",
+              )}
+              disabled={disabled}
+              onClick={() => setMode(categoryMode)}
+              size="sm"
+              type="button"
+              variant={effectiveMode === categoryMode ? "default" : "outline"}
+            >
+              <Tags className="size-4" />
+              Category
+            </Button>
+          ) : null}
           <Button
             disabled={disabled}
             onClick={fillAllSeats}
@@ -153,9 +251,34 @@ export function SeatLayoutDesigner({
         </div>
       </div>
 
-      <div className="bg-surface-muted overflow-x-auto rounded-md border p-4">
+      {hasCategories ? (
+        <div className="flex flex-wrap items-center gap-2">
+          {categories.map((category) => (
+            <Button
+              className={cn(
+                selectedCategoryId === category.id &&
+                  "bg-primary text-primary-foreground hover:bg-primary/90",
+              )}
+              disabled={disabled}
+              key={category.id}
+              onClick={() => selectCategory(category.id)}
+              size="sm"
+              type="button"
+              variant={selectedCategoryId === category.id ? "default" : "outline"}
+            >
+              <span
+                className="size-3 rounded-sm border"
+                style={{ backgroundColor: category.color }}
+              />
+              {category.name}
+            </Button>
+          ))}
+        </div>
+      ) : null}
+
+      <div className="bg-surface-muted max-w-full overflow-x-auto rounded-md border p-4">
         <p className="text-muted mb-2 text-center text-xs font-semibold uppercase">Screen</p>
-        <div className="bg-foreground/80 mx-auto mb-4 h-2 w-48 rounded-full" />
+        <ScreenShape screenType={screenType} />
 
         <div
           className="mx-auto grid w-max gap-2"
@@ -175,13 +298,14 @@ export function SeatLayoutDesigner({
                 const positionX = columnIndex + 1;
                 const seat = seatByPosition.get(getSeatKey(positionX, positionY));
                 const status = seat?.status ?? "empty";
-                const label = seat?.seatLabel ?? getSeatLabel(seats, positionX, positionY);
+                const label = getSeatLabel(seats, positionX, positionY) || seat?.seatLabel;
+                const category = seat?.categoryId ? categoryById.get(seat.categoryId) : null;
 
                 return (
                   <button
                     aria-label={`${label || "Gap"} ${status}`}
                     className={cn(
-                      "flex size-9 flex-col items-center justify-center rounded border text-[0.625rem] font-semibold leading-none transition-colors",
+                      "flex size-9 flex-col items-center justify-center rounded border text-[0.625rem] leading-none font-semibold transition-colors",
                       status === "seat" &&
                         "border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100",
                       status === "disabled" &&
@@ -192,6 +316,15 @@ export function SeatLayoutDesigner({
                     disabled={disabled}
                     key={getSeatKey(positionX, positionY)}
                     onClick={() => handleCellClick(positionX, positionY)}
+                    style={
+                      status === "seat" && category
+                        ? {
+                            backgroundColor: category.color,
+                            borderColor: category.color,
+                            color: "#ffffff",
+                          }
+                        : undefined
+                    }
                     type="button"
                   >
                     {status === "empty" ? null : (
@@ -208,8 +341,14 @@ export function SeatLayoutDesigner({
         </div>
 
         <p className="text-muted mt-4 flex items-center justify-center gap-2 text-center text-xs font-medium">
-          <MousePointer2 className="size-3" />
-          Click Cells To Cycle Seat, Gap, and Disabled Seat.
+          {effectiveMode === layoutMode ? (
+            <MousePointer2 className="size-3" />
+          ) : (
+            <Tags className="size-3" />
+          )}
+          {effectiveMode === layoutMode
+            ? "Click cells to cycle Seat, Gap, and Disabled Seat."
+            : "Click seats to assign the selected category."}
         </p>
       </div>
 
@@ -222,15 +361,28 @@ export function SeatLayoutDesigner({
   );
 }
 
+function ScreenShape({ screenType }: { screenType: ScreenType }) {
+  if (screenType === "curved") {
+    return (
+      <div className="mx-auto mb-4 h-7 w-56 overflow-hidden">
+        <div className="border-foreground/80 h-14 w-full rounded-[50%] border-t-4" />
+      </div>
+    );
+  }
+
+  return <div className="bg-foreground/80 mx-auto mb-4 h-2 w-48 rounded-full" />;
+}
+
 type LegendItemProps = {
   className: string;
   label: string;
+  style?: CSSProperties;
 };
 
-function LegendItem({ className, label }: LegendItemProps) {
+function LegendItem({ className, label, style }: LegendItemProps) {
   return (
     <span className="inline-flex items-center gap-2">
-      <span className={cn("size-3 rounded-sm ring-1", className)} />
+      <span className={cn("size-3 rounded-sm ring-1", className)} style={style} />
       {label}
     </span>
   );
