@@ -2,6 +2,7 @@ import { io, type Socket } from "socket.io-client";
 
 import { useAuthStore } from "#/features/auth/store/authStore";
 import type { ShowSeatStatus } from "../types/showtimeTypes";
+import { getSocketBaseUrl } from "../utils/showtimeSocketUtils";
 
 export const showtimeSocketEvents = {
   error: "error",
@@ -56,7 +57,7 @@ export type ShowStatusChangePayload = {
 };
 
 export function createShowtimeSocket(): Socket {
-  const socket = io(getSocketBaseUrl(), {
+  const socket = io(getSocketBaseUrl(import.meta.env.VITE_API_BASE_URL), {
     autoConnect: false,
     transports: ["websocket", "polling"],
     withCredentials: true,
@@ -71,14 +72,4 @@ export function createShowtimeSocket(): Socket {
   });
 
   return socket;
-}
-
-function getSocketBaseUrl() {
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-
-  if (!apiBaseUrl) {
-    return window.location.origin;
-  }
-
-  return apiBaseUrl.replace(/\/api\/v\d+\/?$/, "");
 }

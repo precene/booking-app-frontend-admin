@@ -22,17 +22,11 @@ import {
 } from "#/shared/components/ui/select";
 import { SearchCombobox } from "#/shared/components/ui/search-combobox";
 import type { FormValidationErrors } from "#/shared/utils/getFormValidationErrors";
-import type { ShowtimePayload } from "../types/showtimeTypes";
+import type { ShowtimeFormValues } from "../utils/showtimeFormUtils";
 import { combineShowtimeDateTime, formatShowtimeDateTime } from "../utils/showtimeFormatters";
 
-export type ShowtimeFormValues = {
-  date: string;
-  movieId: string;
-  priceOverrides: Record<string, string>;
-  screenId: string;
-  time: string;
-  venueId: string;
-};
+export { getShowtimePayload, initialShowtimeFormValues } from "../utils/showtimeFormUtils";
+export type { ShowtimeFormValues } from "../utils/showtimeFormUtils";
 
 export type ShowtimeFormErrors = FormValidationErrors<ShowtimeFormValues>;
 
@@ -61,15 +55,6 @@ type ShowtimeFormProps = {
   title: string;
   venues: Array<Venue>;
   showtimeForm: ShowtimeFormValues;
-};
-
-export const initialShowtimeFormValues: ShowtimeFormValues = {
-  date: "",
-  movieId: "",
-  priceOverrides: {},
-  screenId: "",
-  time: "",
-  venueId: "",
 };
 
 export function ShowtimeForm({
@@ -395,34 +380,4 @@ export function ShowtimeForm({
       </Form>
     </>
   );
-}
-
-export function getShowtimePayload(
-  formValues: ShowtimeFormValues,
-  venue: Venue,
-  priceCategories: Array<SeatCategory> = [],
-): ShowtimePayload {
-  const priceOverrides = priceCategories
-    .map((category) => {
-      const value = formValues.priceOverrides[category.id];
-      const amount = value === "" || value === undefined ? NaN : Number(value);
-      const priceMinor = Number.isFinite(amount)
-        ? Math.round(amount * 100)
-        : category.defaultPriceMinor;
-
-      return {
-        categoryId: category.id,
-        defaultPriceMinor: category.defaultPriceMinor,
-        priceMinor,
-      };
-    })
-    .filter((override) => override.priceMinor !== override.defaultPriceMinor)
-    .map(({ categoryId, priceMinor }) => ({ categoryId, priceMinor }));
-
-  return {
-    movieId: formValues.movieId,
-    ...(priceOverrides.length ? { priceOverrides } : {}),
-    screenId: formValues.screenId,
-    startsAt: combineShowtimeDateTime(formValues.date, formValues.time, venue.timezone) ?? "",
-  };
 }

@@ -12,6 +12,7 @@ import {
   getSeatKey,
   getSeatLabel,
   getSeatLayoutConfig,
+  getRowLabel,
 } from "../utils/seatLayoutUtils";
 
 const categoryId = "11111111-1111-4111-8111-111111111111";
@@ -28,6 +29,10 @@ describe("seat layout utilities", () => {
       { positionX: 2, positionY: 2, status: "seat" },
       { positionX: 3, positionY: 2, status: "seat" },
     ]);
+  });
+
+  it("creates row labels beyond Z", () => {
+    expect([0, 1, 25, 26, 27].map(getRowLabel)).toEqual(["A", "B", "Z", "AA", "AB"]);
   });
 
   it("keeps gaps out of seat definitions and renumbers remaining seats by row", () => {
@@ -72,6 +77,19 @@ describe("seat layout utilities", () => {
     });
   });
 
+  it("keeps optional empty section values out of generated definitions", () => {
+    const definitions = getSeatDefinitions([
+      {
+        positionX: 1,
+        positionY: 1,
+        section: "   ",
+        status: "seat",
+      },
+    ]);
+
+    expect(definitions[0]?.section).toBeUndefined();
+  });
+
   it("derives editable cells and dimensions from an existing layout", () => {
     const layout = createLayout({
       config: { columns: 6, disabledSeats: ["2:1"], rows: 4 },
@@ -83,6 +101,29 @@ describe("seat layout utilities", () => {
       expect.objectContaining({ positionX: 1, positionY: 1, status: "seat" }),
       expect.objectContaining({ positionX: 2, positionY: 1, status: "disabled" }),
     ]);
+  });
+
+  it("falls back to maximum seat positions when layout config has no dimensions", () => {
+    const layout = createLayout({
+      config: {},
+      seatDefs: [
+        {
+          categoryId: null,
+          id: "66666666-6666-4666-8666-666666666666",
+          isAccessible: false,
+          isActive: true,
+          isRestricted: false,
+          positionX: 7,
+          positionY: 5,
+          rowLabel: "E",
+          seatLabel: "E1",
+          section: null,
+        },
+      ],
+    });
+
+    expect(getLayoutRows(layout)).toBe(5);
+    expect(getLayoutColumns(layout)).toBe(7);
   });
 
   it("marks disabled seats inactive for display when legacy disabled-seat config exists", () => {

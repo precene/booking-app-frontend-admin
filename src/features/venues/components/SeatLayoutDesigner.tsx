@@ -8,6 +8,7 @@ import { cn } from "#/shared/utils/cn";
 import type { SeatCategory } from "../types/seatCategoryTypes";
 import type { ScreenType } from "../types/screenTypes";
 import type { SeatLayoutCell, SeatLayoutCellStatus } from "../types/seatLayoutTypes";
+import { assignSeatCategory } from "../utils/seatCategoryUtils";
 import {
   createSeatLayoutCells,
   getRowLabel,
@@ -108,16 +109,7 @@ export function SeatLayoutDesigner({
     if (effectiveMode === categoryMode) {
       if (!seat) return;
 
-      onSeatsChange(
-        seats.map((item) =>
-          item.positionX === positionX && item.positionY === positionY
-            ? {
-                ...item,
-                categoryId: item.categoryId === selectedCategoryId ? null : selectedCategoryId,
-              }
-            : item,
-        ),
-      );
+      onSeatsChange(assignSeatCategory(seats, positionX, positionY, selectedCategoryId));
       return;
     }
 

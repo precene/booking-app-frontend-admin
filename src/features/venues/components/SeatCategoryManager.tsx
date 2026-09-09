@@ -12,6 +12,7 @@ import { toast } from "#/shared/components/ui/toast";
 import { getApiErrorMessage } from "#/shared/utils/getApiErrorMessage";
 import { seatCategoriesApi } from "../services/seatCategoriesApi";
 import type { SeatCategory } from "../types/seatCategoryTypes";
+import { getSeatCategoryFormData, isSeatCategoryAssigned } from "../utils/seatCategoryUtils";
 import { formatVenueMoney } from "../utils/venueFormatters";
 
 type SeatCategoryManagerProps = {
@@ -192,16 +193,19 @@ export function SeatCategoryManager({
     event.preventDefault();
     setFormError(null);
 
-    const category = getCategoryFormData(categoryName, categoryPrice);
-    if (!category) return;
+    const category = getSeatCategoryFormData(categoryName, categoryPrice);
+    if (!category.success) {
+      setFormError(category.error);
+      return;
+    }
 
     setCategoryActionId("new");
 
     try {
       await seatCategoriesApi.create({
         color: categoryColor,
-        defaultPriceMinor: category.defaultPriceMinor,
-        name: category.name,
+        defaultPriceMinor: category.data.defaultPriceMinor,
+        name: category.data.name,
         screenId,
       });
 
@@ -239,19 +243,22 @@ export function SeatCategoryManager({
   async function handleUpdateCategory(category: SeatCategory) {
     setFormError(null);
 
-    const nextCategory = getCategoryFormData(
+    const nextCategory = getSeatCategoryFormData(
       editCategoryRef.current.name,
       editCategoryRef.current.price,
     );
-    if (!nextCategory) return;
+    if (!nextCategory.success) {
+      setFormError(nextCategory.error);
+      return;
+    }
 
     setCategoryActionId(category.id);
 
     try {
       await seatCategoriesApi.update(category.id, {
         color: editCategoryRef.current.color,
-        defaultPriceMinor: nextCategory.defaultPriceMinor,
-        name: nextCategory.name,
+        defaultPriceMinor: nextCategory.data.defaultPriceMinor,
+        name: nextCategory.data.name,
         screenId,
       });
 
@@ -268,7 +275,7 @@ export function SeatCategoryManager({
   async function handleDeleteCategory(category: SeatCategory) {
     setFormError(null);
 
-    if (isCategoryAssigned(category)) {
+    if (isSeatCategoryAssigned(category, assignedCategoryIds)) {
       setFormError("Remove this category from all seats before deleting it.");
       return;
     }
@@ -284,30 +291,6 @@ export function SeatCategoryManager({
     } finally {
       setCategoryActionId(null);
     }
-  }
-
-  function isCategoryAssigned(category: SeatCategory) {
-    return category.usageCount > 0 || assignedCategoryIds.includes(category.id);
-  }
-
-  function getCategoryFormData(name: string, price: string) {
-    const trimmedName = name.trim();
-    const amount = Number(price);
-
-    if (!trimmedName) {
-      setFormError("Category name is required.");
-      return null;
-    }
-
-    if (!Number.isFinite(amount) || amount < 1) {
-      setFormError("Default price must be at least £1.");
-      return null;
-    }
-
-    return {
-      defaultPriceMinor: Math.round(amount * 100),
-      name: trimmedName,
-    };
   }
 
   return (

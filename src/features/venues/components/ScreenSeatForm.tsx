@@ -16,15 +16,11 @@ import {
 } from "#/shared/components/ui/select";
 import type { FormValidationErrors } from "#/shared/utils/getFormValidationErrors";
 import { SeatLayoutDesigner } from "./SeatLayoutDesigner";
-import type { Screen, ScreenType } from "../types/screenTypes";
+import type { ScreenType } from "../types/screenTypes";
 import type { SeatCategory } from "../types/seatCategoryTypes";
-import type { SeatLayout, SeatLayoutCell } from "../types/seatLayoutTypes";
-import {
-  createSeatLayoutCells,
-  getLayoutColumns,
-  getLayoutRows,
-  getSeatCellsFromLayout,
-} from "../utils/seatLayoutUtils";
+import type { SeatLayoutCell } from "../types/seatLayoutTypes";
+import { createSeatLayoutCells } from "../utils/seatLayoutUtils";
+export { getScreenSeatFormValues } from "../utils/screenSeatFormUtils";
 
 export type ScreenSeatFormValues = {
   active: boolean;
@@ -221,21 +217,6 @@ export function ScreenSeatForm({
       </Form>
     </>
   );
-}
-
-export function getScreenSeatFormValues(screen: Screen, layout: SeatLayout | null) {
-  const seats = getSeatCellsFromLayout(layout);
-
-  return {
-    active: screen.active,
-    layoutName: layout?.name ?? "Default Layout",
-    name: screen.name,
-    rows: getLayoutRows(layout),
-    columns: getLayoutColumns(layout),
-    screenType: screen.screenType,
-    seats,
-    sortOrder: screen.sortOrder,
-  };
 }
 
 type FieldErrorInputProps = {

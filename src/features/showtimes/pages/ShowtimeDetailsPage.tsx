@@ -20,16 +20,15 @@ import {
 import { showtimesApi } from "../services/showtimesApi";
 import type { ShowSeat, ShowSeatStatus, Showtime, ShowStatus } from "../types/showtimeTypes";
 import { formatShowtimeDateTime, formatShowtimeTime } from "../utils/showtimeFormatters";
-
-type SeatCount = Record<ShowSeatStatus, number>;
-
-const initialSeatCount: SeatCount = {
-  available: 0,
-  booked: 0,
-  cancelled: 0,
-  held: 0,
-  unavailable: 0,
-};
+import {
+  getAssignedSeatCategories,
+  getSeatMapDimensions,
+  getShowSeatByPosition,
+  getShowSeatCount,
+  groupSeatsByRow,
+  hasSeatPositions,
+  mergeSeatSnapshot,
+} from "../utils/showtimeSeatMapUtils";
 
 const seatStatusStyles: Record<ShowSeatStatus, string> = {
   available: "border-teal-200 bg-teal-50 text-teal-700",
@@ -47,8 +46,6 @@ const seatStatusLabels: Record<ShowSeatStatus, string> = {
   unavailable: "Unavailable",
 };
 
-const seatLabelCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
-
 export default function ShowtimeDetailsPage() {
   const { showId } = useParams({ from: "/_protected/showtimes/$showId" });
   const [show, setShow] = useState<Showtime | null>(null);
@@ -62,17 +59,7 @@ export default function ShowtimeDetailsPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const seatRows = useMemo(() => groupSeatsByRow(seats), [seats]);
-  const seatCount = useMemo(
-    () =>
-      seats.reduce<SeatCount>(
-        (count, seat) => ({
-          ...count,
-          [seat.status]: count[seat.status] + 1,
-        }),
-        initialSeatCount,
-      ),
-    [seats],
-  );
+  const seatCount = useMemo(() => getShowSeatCount(seats), [seats]);
 
   useEffect(() => {
     void loadSeatMap();
@@ -380,15 +367,8 @@ function SeatMapGrid({
     );
   }
 
-  const showSeatByPosition = new Map(
-    seats.flatMap((seat) =>
-      typeof seat.positionX === "number" && typeof seat.positionY === "number"
-        ? [[getSeatKey(seat.positionX, seat.positionY), seat] as const]
-        : [],
-    ),
-  );
-  const columns = Math.max(...seats.map((seat) => seat.positionX ?? 1));
-  const rows = Math.max(...seats.map((seat) => seat.positionY ?? 1));
+  const showSeatByPosition = getShowSeatByPosition(seats);
+  const { columns, rows } = getSeatMapDimensions(seats);
   const assignedCategories = getAssignedSeatCategories(seats);
 
   return (
@@ -488,16 +468,6 @@ function ScreenShape({ screenType }: { screenType: ScreenType }) {
   return <div className="bg-foreground/80 mx-auto mb-4 h-2 w-48 rounded-full" />;
 }
 
-function hasSeatPositions(seats: Array<ShowSeat>) {
-  return seats.every(
-    (seat) =>
-      typeof seat.positionX === "number" &&
-      seat.positionX > 0 &&
-      typeof seat.positionY === "number" &&
-      seat.positionY > 0,
-  );
-}
-
 function getSeatTitle(seat: ShowSeat) {
   const titleParts = [`${seat.seatLabel} - ${seatStatusLabels[seat.status]}`];
 
@@ -512,26 +482,6 @@ function getSeatTitle(seat: ShowSeat) {
   return titleParts.join(" / ");
 }
 
-function getAssignedSeatCategories(seats: Array<ShowSeat>) {
-  const categoryById = new Map<string, { color: string; id: string; name: string }>();
-
-  seats.forEach((seat) => {
-    if (!seat.categoryId || !seat.categoryName || !seat.categoryColor) {
-      return;
-    }
-
-    categoryById.set(seat.categoryId, {
-      color: seat.categoryColor,
-      id: seat.categoryId,
-      name: seat.categoryName,
-    });
-  });
-
-  return [...categoryById.values()].sort((firstCategory, secondCategory) =>
-    firstCategory.name.localeCompare(secondCategory.name),
-  );
-}
-
 function InfoItem({ label, value }: { label: string; value: string }) {
   return (
     <div>
@@ -539,37 +489,6 @@ function InfoItem({ label, value }: { label: string; value: string }) {
       <dd className="mt-1 text-sm font-medium">{value}</dd>
     </div>
   );
-}
-
-function mergeSeatSnapshot(
-  currentSeats: Array<ShowSeat>,
-  snapshotSeats: SeatMapSnapshotPayload["seats"],
-) {
-  const currentSeatById = new Map(currentSeats.map((seat) => [seat.id, seat]));
-
-  return snapshotSeats.map((seat) => ({
-    ...currentSeatById.get(seat.id),
-    ...seat,
-  }));
-}
-
-function groupSeatsByRow(seats: Array<ShowSeat>) {
-  const rowMap = new Map<string, Array<ShowSeat>>();
-
-  seats.forEach((seat) => {
-    rowMap.set(seat.rowLabel, [...(rowMap.get(seat.rowLabel) ?? []), seat]);
-  });
-
-  return [...rowMap.entries()]
-    .sort(([firstRowLabel], [secondRowLabel]) =>
-      seatLabelCollator.compare(firstRowLabel, secondRowLabel),
-    )
-    .map(([rowLabel, rowSeats]) => ({
-      rowLabel,
-      seats: rowSeats.sort((firstSeat, secondSeat) =>
-        seatLabelCollator.compare(firstSeat.seatLabel, secondSeat.seatLabel),
-      ),
-    }));
 }
 
 function formatMoney(amountMinor: number) {
