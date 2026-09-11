@@ -18,14 +18,15 @@ features/
     components/
     middleware/
     pages/
-    validations/
+    tests/
     types/
     utils/
-    store/
     services/
+    store/
+    validations/
 ```
 
-- Keep reusable code in `shared/`, route files in `routes/`, and feature route guards in the relevant `middleware/` folder.
+- Keep reusable code in `shared/`, route files in `routes/`, and feature files in `features/` folder.
 
 ## Backend Contract
 
@@ -75,12 +76,11 @@ features/
 
 ## RBF Reviews
 
-- `Do RBF` means review frontend/backend alignment for the requested section.
+- `Do RBF` means review frontend/backend alignment for the requested module/section.
 - Check business logic, frontend behavior/validation/services, backend routes/schemas/database/services, bugs, missing states, API mismatches, security, performance, scalability, and maintainability.
 - Backend is read-only: report backend issues clearly for the backend developer, never edit backend files.
 - Each finding must state priority (`P0`, `P1`, `P2`, `P3`), area (`Frontend` or `Backend`), and fix location (`Frontend` or `Backend`). Use `P0` for critical blockers, `P1` for high priority, `P2` for medium priority, and `P3` for low priority.
 - Present findings first, ordered by severity with file/line references when available, then assumptions/notes/fix suggestions.
-- Also write RBF findings to `issues.md` at the project root for future tracking.
-- Write each `issues.md` finding in Trello-style format: card title as `P0/P1/P2/P3 Area: Finding Title`, then `Area`, `Fix Location`, `Description`, `Suggested Fix`, and `Affected Files`. Do not add a separate priority section because priority is already in the title.
-- In `issues.md`, do not write full absolute paths. Use relevant paths only and prefix them with `..`, for example `..\booking-app\booking-admin\src\features\auth\pages\LoginPage.tsx`. This protects user privacy and keeps paths useful for developers who store the frontend/backend projects in different local directories.
-- Do not create, update, or move Trello cards unless explicitly asked.
+- Also write RBF findings to `issues.txt` at the project root for future tracking.
+- Write each `issues.txt` finding in Trello-style plain text: numbered card title as `[P0/P1/P2/P3 Area] Finding Title`, then `Fix Location`, `Issue`, `Expected`, `Suggested Fix`, and `Affected Files`.
+- In `issues.txt`, do not write full absolute paths. Use relevant paths only and prefix them with `..`, for example `..\booking-app\booking-admin\src\features\auth\pages\LoginPage.tsx`. This protects user privacy and keeps paths useful for developers who store the frontend/backend projects in different local directories.

@@ -6,8 +6,9 @@ const AUTH_USER_STORAGE_KEY = "admin_user";
 const LEGACY_AUTH_EMAIL_STORAGE_KEY = "admin_email";
 
 interface AuthStore {
-  user: User | null;
   email: string | null;
+  lastValidatedAt: number | null;
+  user: User | null;
   login: (user: User) => void;
   logout: () => void;
 }
@@ -36,14 +37,15 @@ function getStoredUser() {
 const storedUser = getStoredUser();
 
 export const useAuthStore = create<AuthStore>((set) => ({
-  user: storedUser,
   email: storedUser?.email ?? null,
+  lastValidatedAt: null,
+  user: storedUser,
   login: (user) => {
     window.localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(user));
-    set({ email: user.email, user });
+    set({ email: user.email, lastValidatedAt: Date.now(), user });
   },
   logout: () => {
     window.localStorage.removeItem(AUTH_USER_STORAGE_KEY);
-    set({ email: null, user: null });
+    set({ email: null, lastValidatedAt: null, user: null });
   },
 }));

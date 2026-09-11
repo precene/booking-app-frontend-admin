@@ -1,6 +1,5 @@
 import { DateTime } from "luxon";
 
-import type { BookingSummary } from "#/features/bookings/types/bookingTypes";
 import type { DashboardMetric, DashboardSummary } from "../types/dashboardTypes";
 
 export function formatDashboardMoney(amountMinor: number, currency = "GBP") {
@@ -15,26 +14,6 @@ export function formatDashboardDateTime(value: string) {
   const dateTime = DateTime.fromISO(value);
 
   return dateTime.isValid ? dateTime.toFormat("dd LLL yyyy, h:mm a") : "Invalid Date";
-}
-
-export function formatDashboardShortId(id: string) {
-  return id.slice(0, 8).toUpperCase();
-}
-
-export function isToday(value: string) {
-  const dateTime = DateTime.fromISO(value);
-
-  return dateTime.isValid && dateTime.hasSame(DateTime.local(), "day");
-}
-
-export function getPaidRevenueMinor(bookings: Array<BookingSummary>) {
-  return bookings.reduce((total, booking) => {
-    if (booking.status !== "paid") {
-      return total;
-    }
-
-    return total + booking.totalMinor;
-  }, 0);
 }
 
 export function getDashboardMetrics(summary: DashboardSummary): Array<DashboardMetric> {

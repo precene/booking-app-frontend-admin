@@ -21,11 +21,7 @@ import { getApiErrorMessage } from "#/shared/utils/getApiErrorMessage";
 import { DashboardMetricCard } from "../components/DashboardMetricCard";
 import { dashboardApi } from "../services/dashboardApi";
 import type { DashboardSummary } from "../types/dashboardTypes";
-import {
-  formatDashboardDateTime,
-  formatDashboardShortId,
-  getDashboardMetrics,
-} from "../utils/dashboardFormatters";
+import { formatDashboardDateTime, getDashboardMetrics } from "../utils/dashboardFormatters";
 
 const metricIcons = [TicketCheck, PoundSterling, CalendarClock, Film] as const;
 
@@ -121,8 +117,10 @@ export default function DashboardPage() {
                       {booking.bookingReference}
                     </Link>
                     <p className="text-muted mt-1 text-sm">
-                      User {formatDashboardShortId(booking.userId)} /{" "}
-                      {formatDashboardDateTime(booking.createdAt)}
+                      {booking.userName} / {formatDashboardDateTime(booking.createdAt)}
+                    </p>
+                    <p className="text-muted mt-1 text-sm">
+                      {booking.movieTitle} / {booking.venueName}
                     </p>
                   </div>
 
@@ -144,6 +142,7 @@ export default function DashboardPage() {
           <div className="grid gap-3">
             <CatalogHealthRow label="Active Cities" value={summary?.catalog.activeCities ?? 0} />
             <CatalogHealthRow label="Active Venues" value={summary?.catalog.activeVenues ?? 0} />
+            <CatalogHealthRow label="Active Screens" value={summary?.catalog.activeScreens ?? 0} />
             <CatalogHealthRow label="Active Movies" value={summary?.catalog.activeMovies ?? 0} />
             <CatalogHealthRow label="Active Coupons" value={summary?.catalog.activeCoupons ?? 0} />
             <CatalogHealthRow label="Customers" value={summary?.catalog.totalCustomers ?? 0} />
